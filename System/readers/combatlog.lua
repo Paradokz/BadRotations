@@ -119,6 +119,8 @@ function br.read.combatLog()
         end
         ---------------------
         --[[ Swing Timer ]]--
+        if swingTimer == nil then swingTimer = 0 end
+        if nextMH == nil then nextMH = GetTime() + UnitAttackSpeed('player') end
         if param == "SWING_DAMAGE" and source == br.guid then
             swingTimer = 0
             lastMH = GetTime()
@@ -215,6 +217,7 @@ function br.read.combatLog()
                 and SpellID ~= 88263      -- 88263
                 -- and SpellID ~= 172        -- Corruption
                 and SpellID ~= 8690         -- Hearthstone
+                and SpellID ~= 194279     -- Caltrop DoT
             then
                 local color = "|cff12C8FF"
                 local white = "|cffFFFFFF"

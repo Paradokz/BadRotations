@@ -648,11 +648,74 @@ br.idList = {
                 stonebark                   = 197061,
             },
         },
+        -- Balance
+        [102] = {
+            abilities                       = {
+                blessingOfTheAncients       = 202360,
+                furyOfElune                 = 202770,
+                newMoon                     = 202767,
+                halfMoon                    = 202768,
+                fullMoon                    = 202771,
+                stellarFlare                = 202347,
+                sunfire                     = 93402,
+                incarnationChoseOfElune     = 102560,
+                starfall                    = 191034,
+                solarWrath                  = 190984,
+                lunarStrike                 = 194153,
+                starsurge                   = 78674,
+                warriorOfElune              = 202425,
+                solarBeam                   = 78675,
+                celestialAlignment          = 194223,
+                barkskin                    = 22812,
+                rejuvenation                = 774,
+                swiftmend                   = 18562,
+                innervate                   = 29166,
+                renewal                     = 108238,
+            },
+            artifacts                       = {
+            },
+            buffs                           = {
+                blessingOfElune             = 202737,
+                blessingOfAnshe             = 202739,
+                incarnationChoseOfElune     = 102560,
+                celestialAlignment          = 194223,
+                furyOfElune                 = 202770,
+                onethsOverconfidence        = 209407,
+                solarEmpowerment            = 164545,
+                lunarEmpowerment            = 164547,
+                warriorOfElune              = 202425,
+                balanceForm                 = 24858,
+                stellarDrift                = 202461,
+                emeraldDreamcatcher         = 208190,
+                rejuvenation                = 774,
+                barkskin                    = 22812,
+            },
+            debuffs                         = {
+                stellarFlare                = 202347,
+                moonfire                    = 164812,
+                sunfire                     = 164815,
+            },
+            glyphs                          = {
+
+            },
+            talents                         = {
+                blessingOfTheAncients       = 202360,
+                incarnationChoseOfElune     = 102560,
+                furyOfElune                 = 202770,
+                stellarFlare                = 202347,
+                naturesBalance              = 202430,
+                astralCommunion             = 202359,
+                stellarDrift                = 202354,
+                warriorOfElune              = 202425,
+                soulOfTheForest             = 114107,
+            },
+        },
         -- All
         Shared = {
             abilities                       = {
                 bearForm                    = 5487,
                 catForm                     = 768,
+                balanceForm                 = 24858,
                 dash                        = 1850,
                 displacerBeast              = 102280,
                 dreamwalk                   = 193753,
@@ -757,7 +820,7 @@ br.idList = {
                 aMurderOfCrows              = 131894,
                 barrage                     = 120360,
                 volley                      = 194386,
-        intimidation            = 19577,
+                intimidation                = 19577,
             },
         },
         -- Marksmanship
@@ -895,7 +958,6 @@ br.idList = {
                 stickyBomb                  = 191241,
                 throwingAxes                = 200163,
                 wayOfTheMokNathal           = 201082,
-
             },
         },
         -- All
@@ -1366,6 +1428,7 @@ br.idList = {
                 avengingWrath               = 31842;
                 beaconOfLight               = 53563;
                 beaconOfFaith               = 53563;
+                beaconOfVirtue              = 200025;
                 bestowFaith                 = 223306;
                 divineProtection            = 498;
                 divinePurpose               = 216411;
@@ -1603,15 +1666,18 @@ br.idList = {
         [256] = {
             abilities                       = {
                 angelicFeather              = 121536,
+                clarityOfWill               = 152118,
                 divineStar                  = 110744,
                 halo                        = 120517,
                 leapOfFaith                 = 73325,
                 lightsWrath                 = 207946,
-                massResurrection            = 212036,
+                mindbender                  = 123040,
+                mindVision                  = 2096,
                 painSuppression             = 33206,
                 penance                     = 47540,
                 plea                        = 200829,
                 powerInfusion               = 10060,
+                powerWordBarrier            = 62618,
                 powerWordRadiance           = 194509,
                 powerWordShield             = 17,
                 powerWordSolace             = 129250,
@@ -1619,18 +1685,24 @@ br.idList = {
                 purify                      = 527,
                 rapture                     = 47536,
                 schism                      = 214621,
+                shadowCovenant              = 204065,
                 shadowMend                  = 186263,
                 shadowWordPain              = 589,
-                shadowfiend                 = 34433,
+                shiningForce                = 204263,
             },
             artifacts                       = {
 
             },
             buffs                           = {
+                angelicFeather              = 121557,
                 atonement                   = 194384,
+                overloadedWithLight         = 223166,
+                powerInfusion               = 10060,
+                rapture                     = 47536,
             },
             debuffs                         = {
                 purgeTheWicked              = 204213,
+                schism                      = 214621,
                 shadowWordPain              = 589,
                 smite                       = 585,
             },
@@ -1638,11 +1710,26 @@ br.idList = {
 
             },
             talents                         = {
+                angelicFeather              = 121536,
                 bodyAndSoul                 = 64129,
+                castigation                 = 193134,
+                clarityOfWill               = 152118,
+                contrition                  = 197419,
+                divineStar                  = 110744,
                 dominantMind                = 205367,
+                grace                       = 200309,
+                halo                        = 120517,
                 masochism                   = 193063,
+                mindbender                  = 123040,
                 powerInfusion               = 10060,
+                powerWordSolace             = 129250,
+                purgeTheWicked              = 204197,
                 psychicVoice                = 196704,
+                schism                      = 214621,
+                shadowCovenant              = 204065,
+                shieldDiscipline            = 197045,
+                shiningForce                = 204263,
+                thePenitent                 = 200347,
                 twistOfFate                 = 109142,
             },
         },
@@ -1747,9 +1834,13 @@ br.idList = {
                 flashHeal                   = 2061,
                 levitate                    = 1706,
                 massDispel                  = 32375,
+                massResurrection            = 212036,
+                mindControl                 = 605,
                 powerWordBarrier            = 81782,
+                psychicScream               = 8122,
                 resurrection                = 2006,
                 shackleUndead               = 9484,
+                shadowfiend                 = 34433,
                 smite                       = 585,
             },
             artifacts                       = {

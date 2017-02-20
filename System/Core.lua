@@ -65,17 +65,14 @@ frame:SetScript("OnEvent", frame.OnEvent)
 --[[This function is refired everytime wow ticks. This frame is located at the top of Core.lua]]
 
 function BadRotationsUpdate(self)
-	if br.updateInProgress ~= true then 
+	if br.updateInProgress ~= true then
 		self.updateInProgress = true
 		-- local startTime = debugprofilestop()
 		-- LoS Line Draw *TEMP*
 		if FireHack and isChecked("Healer Line of Sight Indicator") then
 			inLoSHealer()
 		end
-		-- getEnemiesInRect(6,25)
-		-- C_Timer.After(0.1, function()
-		--
-		-- end)
+
 		local tempTime = GetTime();
 		if not self.lastUpdateTime then
 			self.lastUpdateTime = tempTime
@@ -119,9 +116,6 @@ function BadRotationsUpdate(self)
 				return false
 			end
 
-			-- Pulse enemiesEngine
-			-- br:PulseUI()
-
 		    -- get DBM Timer/Bars
 		    -- global -> br.DBM.Timer
 		    br.DBM:getBars()
@@ -151,12 +145,13 @@ function BadRotationsUpdate(self)
 	        if br.player ~= nil then
 				br.player:update()
 			end
+			ProfessionHelper()
 		end
 		-- br.debug.cpu.pulse.totalIterations = br.debug.cpu.pulse.totalIterations + 1
 		-- br.debug.cpu.pulse.currentTime = debugprofilestop()-startTime
 		-- br.debug.cpu.pulse.elapsedTime = br.debug.cpu.pulse.elapsedTime + debugprofilestop()-startTime
 		-- br.debug.cpu.pulse.averageTime = br.debug.cpu.pulse.elapsedTime / br.debug.cpu.pulse.totalIterations
-		self.updateInProgress = false 
+		self.updateInProgress = false
 	end
 end
 
