@@ -9,8 +9,9 @@ function br.ui:createConfigWindow()
         -- General
         section = br.ui:createSection(br.ui.window.config, "General")
         -- As you should use the toggle to stop, i (defmaster) just activated this toggle default and made it non interactive
-        local startStop = br.ui:createCheckbox(section, "Start/Stop BadRotations", "Uncheck to prevent BadRotations pulsing.");
+        local startStop = br.ui:createCheckbox(section, "Start/Stop BadRotations", "Toggle this option from the Toggle Bar (Shift Left Click on the Minimap Icon.");
         startStop:SetChecked(true); br.data.settings[br.selectedSpec][br.selectedProfile]["Start/Stop BadRotationsCheck"] = true; startStop.frame:Disable()
+        -- br.ui:createCheckbox(section, "Start/Stop BadRotations", "Uncheck to prevent BadRotations pulsing.");
         rotationLog = br.ui:createCheckbox(section, "Rotation Log", "Display Rotation Log.");
         -- br.ui:createCheckbox(section, "Rotation Log", "Display Rotation Log.")
         br.ui:createCheckbox(section, "Display Failcasts", "Dispaly Failcasts in Debug.")
@@ -19,6 +20,8 @@ function br.ui:createConfigWindow()
         br.ui:createCheckbox(section, "Auto-Sell/Repair", "Automatically sells grays and repairs when you open a repair vendor.")
         br.ui:createCheckbox(section, "Accept Queues", "Automatically accept LFD, LFR, .. queue.")
         br.ui:createCheckbox(section, "Overlay Messages", "Check to enable chat overlay messages.")
+        br.ui:createSpinner(section,  "Notify Not Unlocked", 10, 5, 60, 5, "Will alert you at the set interval when FireHack or EWT is not attached.")
+        br.ui:createCheckbox(section, "Reset Options", "|cffFF0000 WARNING!|cffFFFFFF Checking this will reset setting on reload!")
         br.ui:checkSectionState(section)
     end
 
@@ -52,7 +55,7 @@ function br.ui:createConfigWindow()
         br.ui:createCheckbox(section, "Ignore Absorbs", "Check this if you want to ignore absorb shields. If checked, it will add shieldBuffValue/4 to hp. May end up as overheals, disable to save mana.")
         br.ui:createCheckbox(section, "Incoming Heals", "If checked, it will add incoming health from other healers to hp. Uncheck this if you want to prevent overhealing units.")
         br.ui:createSpinner(section, "Overhealing Cancel", 95, nil, nil, nil, "Set Desired Threshold at which you want to prevent your own casts.")
-        br.ui:createCheckbox(section, "Healing Debug", "Check to display Healing Engine Debug.")
+        healingDebug = br.ui:createCheckbox(section, "Healing Debug", "Check to display Healing Engine Debug.")
         br.ui:createSpinner(section, "Debug Refresh", 500, 0, 1000, 25, "Set desired Healing Engine Debug Table refresh for rate in ms.")
         br.ui:createSpinner(section, "Dispel delay", 15, 5, 90, 5, "Set desired dispel delay in % of debuff duration.\n|cffFF0000Will randomise around the value you set.")
         br.ui:createCheckbox(section, "Healer Line of Sight Indicator", "Draws a line to healers. Green In Line of Sight / Red Not In Line of Sight")

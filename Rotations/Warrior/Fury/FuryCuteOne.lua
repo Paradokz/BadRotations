@@ -375,10 +375,10 @@ local function runRotation()
         -- Trinkets
                 -- use_item,slot=trinket1,if=buff.battle_cry.up&buff.enrage.up
                 if isChecked("Trinkets") and buff.battleCry.exists() and buff.enrage.exists() then
-                    if canUse(13) then
+                    if canUse(13) and not hasEquiped(140808) then
                         useItem(13)
                     end
-                    if canUse(14) then
+                    if canUse(14) and not hasEquiped(140808) then
                         useItem(14)
                     end
                 end
@@ -480,7 +480,7 @@ local function runRotation()
             -- use_item,name=draught_of_souls,if=equipped.draught_of_souls&buff.battle_cry.remains>2&buff.enrage.remains>2&((talent.dragon_roar.enabled&buff.dragon_roar.remains>=3)|!talent.dragon_roar.enabled)
             if hasEquiped(140808) and buff.battleCry.remain() > 2 and buff.enrage.remain() > 2 and ((talent.dragonRoar and buff.dragonRoar.remain() >= 3) or not talent.dragonRoar) then
                 if canUse(140808) then
-                    useItem(14080)
+                    useItem(140808)
                 end
             end
         -- Odyn's Fury
@@ -707,7 +707,7 @@ local function runRotation()
 ---------------------------------
 --- Out Of Combat - Rotations ---
 ---------------------------------
-            if not inCombat and isValidUnit("target") then
+            if not inCombat and isValidUnit("target") and not IsMounted() then
                 if actionList_PreCombat() then return end
                 if getDistance(units.dyn5)<5 then
                     StartAttack()
@@ -722,7 +722,7 @@ local function runRotation()
 -----------------------------
 --- In Combat - Rotations ---
 -----------------------------
-            if inCombat and isValidUnit(units.dyn5) then
+            if inCombat and isValidUnit(units.dyn5) and not IsMounted() then
             -- Auto Attack
                 --auto_attack
                 if getDistance(units.dyn5) < 5 then

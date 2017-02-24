@@ -54,10 +54,8 @@ local function createOptions()
         -- Beacon of Virtue
             br.ui:createSpinner(section, "Beacon of Virtue", 30, 0, 100, 5, "Health Percent to Cast At")
             br.ui:createSpinner(section, "BoV Targets",  6,  0,  40,  1,  "Minimum Beacon of Virtue Targets")
-        -- Crusader Strike
-            br.ui:createCheckbox(section, "Crusader Strike")
         -- Redemption
-            br.ui:createDropdownWithout(section, "Redemption", {"|cffFFFFFFTarget","|cffFFFFFFMouseover"}, 1, "|cffFFFFFFSelect Redemption Mode.")
+            br.ui:createDropdown(section, "Redemption", {"|cffFFFFFFTarget","|cffFFFFFFMouseover"}, 1, "|cffFFFFFFSelect Redemption Mode.")
         br.ui:checkSectionState(section)
         -------------------------
         --- INTERRUPT OPTIONS ---
@@ -74,6 +72,7 @@ local function createOptions()
         section = br.ui:createSection(br.ui.window.profile, "Single Target Healing")
             --Flash of Light
             br.ui:createSpinner(section, "Flash of Light",  30,  0,  100,  5,  "Health Percent to Cast At")
+            br.ui:createDropdownWithout(section, "FoL Infuse", {"|cffFFFFFFNormal","|cffFFFFFFOnly Infuse"}, 1, "|cffFFFFFFOnly Use Infusion Procs.")
             --Holy Light
             br.ui:createSpinner(section, "Holy Light",  85,  0,  100,  5,  "Health Percent to Cast At")
             br.ui:createDropdownWithout(section, "Holy Light Infuse", {"|cffFFFFFFNormal","|cffFFFFFFOnly Infuse"}, 1, "|cffFFFFFFOnly Use Infusion Procs.")
@@ -83,6 +82,7 @@ local function createOptions()
             br.ui:createSpinner(section, "Bestow Faith", 99, 0, 100, 5, "Health Percent to Cast At")
             -- Light of the Martyr
             br.ui:createSpinner(section, "Light of the Martyr", 50, 0, 100, 5, "Health Percent to Cast At")
+            br.ui:createCheckbox(section, "Non Moving Martyr")
             -- Tyr's Deliverance
             br.ui:createSpinner(section, "Tyr's Deliverance", 50, 0, 100, 5, "Health Percent to Cast At")
         br.ui:checkSectionState(section)
@@ -95,6 +95,24 @@ local function createOptions()
             br.ui:createSpinner(section, "LoD Targets",  6,  0,  40,  1,  "Minimum Light of Dawn Targets")
         br.ui:checkSectionState(section)
         -------------------------
+        ---------- DPS ----------
+        -------------------------
+        section = br.ui:createSection(br.ui.window.profile, "DPS")
+            br.ui:createSpinner(section, "DPS", 80, 0, 100, 5, "Minimum Health to DPS")
+            -- Consecration
+            br.ui:createSpinner(section, "Consecration",  6,  0,  40,  1,  "Minimum Consecration Targets")
+            -- Holy Prism
+            br.ui:createSpinner(section, "Holy Prism Damage",  6,  0,  40,  1,  "Minimum Holy Prism Targets")
+            -- Light's Hammer
+            br.ui:createSpinner(section, "Light's Hammer Damage",  6,  0,  40,  1,  "Minimum Light's Hammer Targets")
+            -- Judgement
+            br.ui:createCheckbox(section, "Judgement")
+            -- Holy Shock
+            br.ui:createCheckbox(section, "Holy Shock Damage")
+            -- Crusader Strike
+            br.ui:createCheckbox(section, "Crusader Strike")
+        br.ui:checkSectionState(section)
+        -------------------------
         ------ COOL  DOWNS ------
         -------------------------
         section = br.ui:createSection(br.ui.window.profile, "Cool Downs")
@@ -103,12 +121,14 @@ local function createOptions()
             br.ui:createSpinner(section, "AW Targets",  6,  0,  40,  1,  "Minimum Avenging Wrath Targets")
             -- Lay on Hands
             br.ui:createSpinner(section, "Lay on Hands", 20, 0, 100, 5, "Health Percent to Cast At")
+            br.ui:createDropdownWithout(section, "Lay on Hands Target", {"|cffFFFFFFAll","|cffFFFFFFTanks", "|cffFFFFFFSelf"}, 1, "|cffFFFFFFTarget for LoH")
             -- Holy Avenger
             br.ui:createSpinner(section, "Holy Avenger", 50, 0, 100, 5, "Health Percent to Cast At")
             br.ui:createSpinner(section, "HA Targets",  6,  0,  40,  1,  "Minimum Holy Avenger Targets")
             -- Aura Mastery
             br.ui:createSpinner(section, "Aura Mastery",  30,  0,  100,  5,  "Health Percent to Cast At")
             br.ui:createSpinner(section, "AM Targets",  6,  0,  40,  1,  "Minimum Aura Mastery Targets")
+        br.ui:checkSectionState(section)
     end
     optionTable = {{
         [1] = "Rotation Options",
@@ -165,8 +185,13 @@ local function runRotation()
         local units                                         = units or {}
 
         units.dyn5 = br.player.units(5)
+        units.dyn15 = br.player.units(15)
+        units.dyn30 = br.player.units(30)
+        units.dyn40 = br.player.units(40)
         units.dyn30AoE = br.player.units(30,true)
         enemies.yards8 = br.player.enemies(8)
+        enemies.yards10 = br.player.enemies(10)
+        enemies.yards15 = br.player.enemies(15)
         enemies.yards30 = br.player.enemies(30)
         enemies.yards40 = br.player.enemies(40)
 
@@ -193,7 +218,7 @@ local function runRotation()
 -----------------
         if getOptionValue("Mode") == 1 and not IsMounted() then
             -- Redemption
-            if isChecked("Redemption") then
+            if isChecked("Redemption") then                
                 if getOptionValue("Redemption") == 1
                     and UnitIsPlayer("target") and UnitIsDeadOrGhost("target") and UnitIsFriend("target","player")
                 then
@@ -252,7 +277,7 @@ local function runRotation()
                     end
                 end
             end
-             ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             --AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing----AOE Healing
             ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             -- Light of Dawn
@@ -344,13 +369,14 @@ local function runRotation()
                 end
                 ----AOEction List - Interrupts
                 if useInterrupts() then
-                    for i=1, #getEnemies("player",20) do
-                        thisUnit = getEnemies("player",20)[i]
+                    for i=1, #getEnemies("player",10) do
+                        thisUnit = getEnemies("player",10)[i]
                         distance = getDistance(thisUnit)
                         if canInterrupt(thisUnit,getOptionValue("InterruptAt")) then
-                            if distance < 5 then
+                            if distance <= 10 then
             -- Hammer of Justice
                                 if isChecked("Hammer of Justice") then
+
                                     if cast.hammerOfJustice(thisUnit) then return end
                                 end
                             end
@@ -362,14 +388,10 @@ local function runRotation()
         if getOptionValue("Mode") == 2 and not IsMounted() then
             -- Redemption
             if isChecked("Redemption") then
-                if getOptionValue("Redemption") == 1
-                    and UnitIsPlayer("target") and UnitIsDeadOrGhost("target") and UnitIsFriend("target","player")
-                then
+                if getOptionValue("Redemption") == 1 and UnitIsPlayer("target") and UnitIsDeadOrGhost("target") and UnitIsFriend("target","player") then
                     if cast.redemption("target") then return end
                 end
-                if getOptionValue("Redemption") == 2
-                    and UnitIsPlayer("mouseover") and UnitIsDeadOrGhost("mouseover") and UnitIsFriend("mouseover","player")
-                then
+                if getOptionValue("Redemption") == 2 and UnitIsPlayer("mouseover") and UnitIsDeadOrGhost("mouseover") and UnitIsFriend("mouseover","player") then
                     if cast.redemption("mouseover") then return end
                 end
             end
@@ -385,6 +407,22 @@ local function runRotation()
                     end
                 end
             end
+            -- Interrupt
+            if useInterrupts() then
+                    for i=1, #getEnemies("player",10) do
+                        thisUnit = getEnemies("player",10)[i]
+                        distance = getDistance(thisUnit)
+                        if canInterrupt(thisUnit,getOptionValue("InterruptAt")) then
+                            if distance <= 10 then
+            -- Hammer of Justice
+                                if isChecked("Hammer of Justice") then
+
+                                    if cast.hammerOfJustice(thisUnit) then return end
+                                end
+                            end
+                        end
+                    end
+                end -- End Interrupt Check
             -- Beacon of Light on Tank
             if isChecked("Beacon of Light") then
                 if inInstance then    
@@ -450,6 +488,37 @@ local function runRotation()
                     end
                 end
             end
+            ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            -- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS ----------- DPS -----------
+            ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            if isChecked("DPS") and lowest.hp >= getValue("DPS") and not UnitIsFriend("target", "player") then
+                --Consecration
+                if isChecked("Consecration") and #enemies.yards8 >= getValue("Consecration") and not isMoving("player") then
+                    if cast.consecration() then return end
+                end
+                -- Holy Prism
+                if isChecked("Holy Prism Damage") and talent.holyPrism and #enemies.yards15 >= getValue("Holy Prism Damage") and php < 90 then
+                    if cast.holyPrism(units.dyn15) then return end
+                end
+                -- Light's Hammer
+                if isChecked("Light's Hammer Damage") and talent.lightsHammer and not isMoving("player") and #enemies.yards10 >= getValue("Light's Hammer Damage") then
+                    if cast.lightsHammer("best",nil,1,10) then return end
+                end
+                -- Judgement
+                if isChecked("Judgement") then
+                    if cast.judgment(units.dyn30) then return end
+                end
+                -- Holy Shock
+                if isChecked("Holy Shock Damage") then
+                    if cast.holyShock(units.dyn40) then return end
+                end
+                -- Crusader Strike
+                if isChecked("Crusader Strike") and (charges.crusaderStrike == 2 or debuff.judgement.exists(units.dyn5) or (charges.crusaderStrike >= 1 and recharge.crusaderStrike < 3)) then
+                    if not UnitIsFriend(units.dyn5, "player") then
+                        if cast.crusaderStrike(units.dyn5) then return end
+                    end
+                end
+            end
             -- Cool downs
             if inCombat then
                 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -471,9 +540,21 @@ local function runRotation()
                 end
                 -- Lay on Hands
                 if isChecked("Lay on Hands") then
-                    for i = 1, #br.friend do
-                        if br.friend[i].hp <= getValue ("Lay on Hands") then
-                            if cast.layOnHands(br.friend[i].unit) then return end
+                    if getOptionValue("Lay on Hands Target") == 1 then
+                        for i = 1, #br.friend do
+                            if br.friend[i].hp <= getValue ("Lay on Hands") then
+                                if cast.layOnHands(br.friend[i].unit) then return end
+                            end
+                        end
+                    elseif getOptionValue("Lay on Hands Target") == 2 then
+                        for i = 1, #br.friend do
+                            if br.friend[i].hp <= getValue ("Lay on Hands") and UnitGroupRolesAssigned(br.friend[i].unit) == "TANK" then
+                                if cast.layOnHands(br.friend[i].unit) then return end
+                            end
+                        end
+                    elseif getOptionValue("Lay on Hands Target") == 3 then
+                        if php <= getValue("Lay on Hands") then
+                            if cast.layOnHands("player") then return end
                         end
                     end
                 end
@@ -491,7 +572,7 @@ local function runRotation()
                 end
             end
             -- Holy Prism
-            if isChecked("Holy Prism") then
+            if isChecked("Holy Prism") and talent.holyPrism then
                 if getLowAllies(getValue"Holy Prism") >= getValue("Holy Prism Targets") then
                     if cast.holyPrism(units.dyn15) then return end
                 end
@@ -502,9 +583,8 @@ local function runRotation()
                     if br.friend[i].hp <= getValue("Light of Dawn") then
                         local lowHealthCandidates = getUnitsToHealAround(br.friend[i].unit,15,getValue("Light of Dawn"),#br.friend)
                         if #lowHealthCandidates >= getValue("LoD Targets") then
-                            if cast.ruleOfLaw() then
-                                if cast.lightOfDawn(br.friend[i].unit) then return end
-                            end
+                            if cast.ruleOfLaw() then end
+                            if cast.lightOfDawn(br.friend[i].unit) then return end
                         end
                     end
                 end
@@ -544,9 +624,9 @@ local function runRotation()
                 end
             end
             -- Flash of Light
-            if isChecked("Flash of Light") then
+            if isChecked("Flash of Light") and (getOptionValue("FoL Infuse") == 1 or (getOptionValue("FoL Infuse") == 2 and buff.infusionOfLight.exists("player"))) then
                 for i = 1, #br.friend do
-                    if br.friend[i].hp <= getValue("Flash of Light") then
+                    if br.friend[i].hp <= getValue("Flash of Light")  then
                         if cast.flashOfLight(br.friend[i].unit) then return end
                     end
                 end
@@ -560,19 +640,14 @@ local function runRotation()
                 end
             end
             -- Emergency Martyr Heals
-            if isMoving("player") then
+            if isMoving("player") or isChecked("Non Moving Martyr") then
                 for i = 1, #br.friend do
                     if br.friend[i].hp <= 20 then
                         if cast.lightOfTheMartyr(br.friend[i].unit) then return end
                     end
                 end
             end
-            -- Crusader Strike
-            if isChecked("Crusader Strike") then
-                if not UnitIsFriend(units.dyn5, "player") then
-                    if cast.crusaderStrike(units.dyn5) then return end
-                end
-            end
+            
          end -- Test Mode
     end -- End Timer
 end -- End runRotation

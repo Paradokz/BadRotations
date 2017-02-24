@@ -309,7 +309,23 @@ br.idList = {
                 torment                     = 185245,
             },
             artifacts                       = {
-
+                aldrachiDesign              = 207343,
+                auraOfPain                  = 207347,
+                charredWarblades            = 213010,
+                defensiveSpikes             = 212829,
+                demonicFlames               = 212894,
+                devourSoul                  = 212821,
+                embraceThePain              = 212816,
+                fieryDemise                 = 212817,
+                fueledByPain                = 213017,
+                honedWarblades              = 207352,
+                infernalForce               = 207375,
+                painBringer                 = 207387,
+                shatterTheSouls             = 212827,
+                siphonPower                 = 218910,
+                soulCarver                  = 207407,
+                tormentedSouls              = 214744,
+                willOfTheIllidari           = 212819,
             },
             buffs                           = {
                 demonSpikes                 = 203819,
@@ -651,6 +667,7 @@ br.idList = {
         -- Balance
         [102] = {
             abilities                       = {
+                forceOfNature               = 205636,
                 blessingOfTheAncients       = 202360,
                 furyOfElune                 = 202770,
                 newMoon                     = 202767,
@@ -671,6 +688,7 @@ br.idList = {
                 swiftmend                   = 18562,
                 innervate                   = 29166,
                 renewal                     = 108238,
+                wildCharge                  = 102383,
             },
             artifacts                       = {
             },
@@ -689,6 +707,7 @@ br.idList = {
                 emeraldDreamcatcher         = 208190,
                 rejuvenation                = 774,
                 barkskin                    = 22812,
+                owlkinFrenzy                = 157228,
             },
             debuffs                         = {
                 stellarFlare                = 202347,
@@ -699,6 +718,7 @@ br.idList = {
 
             },
             talents                         = {
+                forceOfNature               = 205636,
                 blessingOfTheAncients       = 202360,
                 incarnationChoseOfElune     = 102560,
                 furyOfElune                 = 202770,
@@ -1412,6 +1432,7 @@ br.idList = {
                 holyLight                   = 82326;
                 holyPrism                   = 114165;
                 holyShock                   = 20473;
+                judgment                    = 20271,
                 lightOfDawn                 = 85222;
                 lightOfTheMartyr            = 183998;
                 lightsHammer                = 114158;
@@ -1440,6 +1461,7 @@ br.idList = {
 
             },
             debuffs                         = {
+                judgement                   = 214222,
 
             },
             glyphs                          = {

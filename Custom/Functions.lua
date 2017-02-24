@@ -47,6 +47,7 @@ function isCCed(Unit)
 end
 
 function castGroundAtBestLocation(spellID, radius, minUnits, maxRange, minRange, spellType)
+	-- Print("Castiing "..GetSpellInfo(spellID))
 	-- description:
 		-- find best position for AoE spell and cast it there
 
@@ -75,20 +76,23 @@ function castGroundAtBestLocation(spellID, radius, minUnits, maxRange, minRange,
 	-- fill allUnitsInRange with data from enemiesEngine/healingEngine
 	--Print("______________________1")
 	-- for i=1,#unitTable do
+
 	for k, v in pairs(unitTable) do
-		local thisUnit = unitTable[k].unit
-		local thisDistance = getDistance(thisUnit)
-		local hasThreat = isValidUnit(thisUnit) or UnitIsFriend(thisUnit,"player") --hasThreat(br.enemy[i].unit)
-		--Print(thisUnit.." - "..thisDistance)
-		if isNotBlacklisted(thisUnit) then
-			--Print("blacklist passed")
-			if thisDistance < maxRange and thisDistance >= minRange and hasThreat then
-				--Print("distance passed")
-				if not UnitIsDeadOrGhost(thisUnit) and (getFacing("player",thisUnit) or UnitIsUnit(thisUnit,"player")) and getLineOfSight(thisUnit) and not isMoving(thisUnit) then
-					--Print("ghost passed")
-					if UnitAffectingCombat(thisUnit) or (spellType == "heal" and getHP(Unit) < 100) or isDummy(thisUnit) then
-						--Print("combat and dummy passed")
-						table.insert(allUnitsInRange,thisUnit)
+		if type(k) == "number" or type(k) == "string" then 
+			local thisUnit = unitTable[k].unit
+			local thisDistance = getDistance(thisUnit)
+			local hasThreat = (spellType ~= "heal" and isValidUnit(thisUnit)) or UnitIsFriend(thisUnit,"player") --hasThreat(br.enemy[i].unit)
+			if isNotBlacklisted(thisUnit) then
+				-- Print("blacklist passed")
+				if thisDistance < maxRange and thisDistance >= minRange and hasThreat then
+					-- Print("distance passed")
+					if not UnitIsDeadOrGhost(thisUnit) and (getFacing("player",thisUnit) or UnitIsUnit(thisUnit,"player")) and getLineOfSight(thisUnit) and not isMoving(thisUnit) then
+						-- Print("ghost passed")
+						if UnitAffectingCombat(thisUnit) or (spellType == "heal" and getHP(thisUnit) < 90) or isDummy(thisUnit) then
+							-- Print("combat and dummy passed")
+							table.insert(allUnitsInRange,thisUnit)
+							-- Print("insert end")
+						end
 					end
 				end
 			end
@@ -120,7 +124,7 @@ function castGroundAtBestLocation(spellID, radius, minUnits, maxRange, minRange,
 	-- where to cast
 	--Print("______________________3")
 	if #goodUnits > 0 then
-		--Print("goodUnits > 0")
+		--Print("goodUnits: "..#goodUnits)
 		if #goodUnits > 1 then
 			--Print("goodUnits > 1")
 			local mX, mY,mZ = 0,0,0
@@ -412,7 +416,7 @@ function SalvageHelper()
 				salvageTimer = GetTime() -- if no more free slots, start timer
                 -- TEMP ! Trys to sell to close merchant (needs addon which sells items when opening merchant window)
                 CloseMerchant()
-                for i=1, GetObjectCount() do
+                for i=1, ObjectCount() do
                     -- Locals
                     local thisObject = GetObjectWithIndex(i)
                     if ObjectIsType(thisObject, ObjectTypes.Unit) then
@@ -451,14 +455,15 @@ end
 
 -- Used by new Class Framework to put all seperat Spell-Tables into new spell table
 function mergeSpellTables(tSpell, tCharacter, tClass, tSpec)
-  tSpell = mergeTables(tSpell, tCharacter)
-  tSpell = mergeTables(tSpell, tClass)
-  tSpell = mergeTables(tSpell, tSpec)
-  return tSpell
+  	tSpell = mergeTables(tSpell, tCharacter)
+  	tSpell = mergeTables(tSpell, tClass)
+  	tSpell = mergeTables(tSpell, tSpec)
+  	return tSpell
 end
 function mergeIdTables(idTable)
 	local class = select(2,UnitClass("player"))
 	local spec = GetSpecializationInfo(GetSpecialization())
+	if idTable ~= nil then idTable = {} end
 	if br.idList.Shared ~= nil then
 		idTable = mergeTables(idTable, br.idList.Shared)
 	end
