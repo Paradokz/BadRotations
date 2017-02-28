@@ -4,33 +4,31 @@ local rotationName = "Kuukuu" -- Change to name of profile listed in options dro
 --- Toggles ---
 ---------------
 local function createToggles() -- Define custom toggles
--- Rotation Button
-    RotationModes = {
-        [1] = { mode = "Auto", value = 1 , overlay = "Automatic Rotation", tip = "Swaps between Single and Multiple based on number of targets in range.", highlight = 1, icon = br.player.spell.beaconOfLight },
-        [2] = { mode = "Mult", value = 2 , overlay = "Multiple Target Rotation", tip = "Multiple target rotation used.", highlight = 0, icon = br.player.spell.beaconOfLight },
-        [3] = { mode = "Sing", value = 3 , overlay = "Single Target Rotation", tip = "Single target rotation used.", highlight = 0, icon = br.player.spell.holyShock },
-        [4] = { mode = "Off", value = 4 , overlay = "DPS Rotation Disabled", tip = "Disable DPS Rotation", highlight = 0, icon = br.player.spell.blessingOfSacrifice}
-    };
-    CreateButton("Rotation",1,0)
 -- Cooldown Button
     CooldownModes = {
         [1] = { mode = "Auto", value = 1 , overlay = "Cooldowns Automated", tip = "Automatic Cooldowns - Boss Detection.", highlight = 1, icon = br.player.spell.holyAvenger},
         [2] = { mode = "On", value = 1 , overlay = "Cooldowns Enabled", tip = "Cooldowns used regardless of target.", highlight = 0, icon = br.player.spell.auraMastery},
         [3] = { mode = "Off", value = 3 , overlay = "Cooldowns Disabled", tip = "No Cooldowns will be used.", highlight = 0, icon = br.player.spell.absolution}
     };
-    CreateButton("Cooldown",2,0)
+    CreateButton("Cooldown",1,0)
 -- Defensive Button
     DefensiveModes = {
         [1] = { mode = "On", value = 1 , overlay = "Defensive Enabled", tip = "Includes Defensive Cooldowns.", highlight = 1, icon = br.player.spell.divineProtection},
         [2] = { mode = "Off", value = 2 , overlay = "Defensive Disabled", tip = "No Defensives will be used.", highlight = 0, icon = br.player.spell.blessingOfProtection}
     };
-    CreateButton("Defensive",3,0)
+    CreateButton("Defensive",2,0)
 -- Interrupt Button
     InterruptModes = {
         [1] = { mode = "On", value = 1 , overlay = "Interrupts Enabled", tip = "Includes Basic Interrupts.", highlight = 1, icon = br.player.spell.hammerOfJustice},
         [2] = { mode = "Off", value = 2 , overlay = "Interrupts Disabled", tip = "No Interrupts will be used.", highlight = 0, icon = br.player.spell.hammerOfJustice}
     };
-    CreateButton("Interrupt",4,0)
+    CreateButton("Interrupt",3,0)
+    -- Cleanse Button
+    CleanseModes = {
+        [1] = { mode = "On", value = 1 , overlay = "Cleanse Enabled", tip = "Cleanse Enabled", highlight = 1, icon = br.player.spell.cleanse },
+        [2] = { mode = "Off", value = 2 , overlay = "Cleanse Disabled", tip = "Cleanse Disabled", highlight = 0, icon = br.player.spell.cleanse }
+    };
+    CreateButton("Cleanse",4,0)
 end
 
 ---------------
@@ -47,8 +45,6 @@ local function createOptions()
             --General or Test
             br.ui:createDropdownWithout(section, "Mode", {"|cffFFFFFFNormal","|cffFFFFFFTest"}, 1, "|cffFFFFFFSet Mode to use.")
         --    br.ui:createCheckbox(section, "Boss Helper")
-            --Cleanse
-            br.ui:createCheckbox(section, "Cleanse")
         --Beacon of Light
             br.ui:createCheckbox(section, "Beacon of Light")
         -- Beacon of Virtue
@@ -80,6 +76,7 @@ local function createOptions()
             br.ui:createSpinner(section, "Holy Shock", 99, 0, 100, 5, "Health Percent to Cast At")
             --Bestow Faith
             br.ui:createSpinner(section, "Bestow Faith", 99, 0, 100, 5, "Health Percent to Cast At")
+            br.ui:createDropdownWithout(section, "Bestow Faith Target", {"|cffFFFFFFAll","|cffFFFFFFTanks"}, 1, "|cffFFFFFFTarget for BF")
             -- Light of the Martyr
             br.ui:createSpinner(section, "Light of the Martyr", 50, 0, 100, 5, "Health Percent to Cast At")
             br.ui:createCheckbox(section, "Non Moving Martyr")
@@ -231,7 +228,7 @@ local function runRotation()
                 end
             end
             -- Cleanse
-            if isChecked("Cleanse") then
+            if br.player.mode.cleanse == 1 then
                 for i = 1, #br.friend do
                     for n = 1,40 do
                         local buff,_,_,count,bufftype,duration = UnitDebuff(br.friend[i].unit, n)
@@ -339,7 +336,7 @@ local function runRotation()
                     end
                 end
             end
-            if inCombat then
+            if inCombat and useCDs() then
                 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 --Cooldowns ----- Cooldowns -----Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- Cooldowns ----- 
                 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -395,7 +392,7 @@ local function runRotation()
                     if cast.redemption("mouseover") then return end
                 end
             end
-            if isChecked("Cleanse") then
+            if br.player.mode.cleanse == 1 then
                 for i = 1, #br.friend do
                     for n = 1,40 do
                         local buff,_,_,count,bufftype,duration = UnitDebuff(br.friend[i].unit, n)
@@ -409,20 +406,19 @@ local function runRotation()
             end
             -- Interrupt
             if useInterrupts() then
-                    for i=1, #getEnemies("player",10) do
-                        thisUnit = getEnemies("player",10)[i]
-                        distance = getDistance(thisUnit)
-                        if canInterrupt(thisUnit,getOptionValue("InterruptAt")) then
-                            if distance <= 10 then
-            -- Hammer of Justice
-                                if isChecked("Hammer of Justice") then
-
-                                    if cast.hammerOfJustice(thisUnit) then return end
-                                end
+                for i=1, #getEnemies("player",10) do
+                    thisUnit = getEnemies("player",10)[i]
+                    distance = getDistance(thisUnit)
+                    if canInterrupt(thisUnit,getOptionValue("InterruptAt")) then
+                        if distance <= 10 then
+        -- Hammer of Justice
+                            if isChecked("Hammer of Justice") then
+                                if cast.hammerOfJustice(thisUnit) then return end
                             end
                         end
                     end
-                end -- End Interrupt Check
+                end
+            end -- End Interrupt Check
             -- Beacon of Light on Tank
             if isChecked("Beacon of Light") then
                 if inInstance then    
@@ -571,6 +567,8 @@ local function runRotation()
                     end
                 end
             end
+            if isCastingSpell(spell.holyLight) then return end
+            if isCastingSpell(spell.flashOfLight) then return end
             -- Holy Prism
             if isChecked("Holy Prism") and talent.holyPrism then
                 if getLowAllies(getValue"Holy Prism") >= getValue("Holy Prism Targets") then
@@ -583,8 +581,10 @@ local function runRotation()
                     if br.friend[i].hp <= getValue("Light of Dawn") then
                         local lowHealthCandidates = getUnitsToHealAround(br.friend[i].unit,15,getValue("Light of Dawn"),#br.friend)
                         if #lowHealthCandidates >= getValue("LoD Targets") then
-                            if cast.ruleOfLaw() then end
-                            if cast.lightOfDawn(br.friend[i].unit) then return end
+                            if GetSpellCooldown(85222) == 0 then
+                                if cast.ruleOfLaw() then end
+                                if cast.lightOfDawn(br.friend[i].unit) then return end
+                            end
                         end
                     end
                 end
@@ -595,9 +595,17 @@ local function runRotation()
             end
             -- Bestow Faith
             if isChecked("Bestow Faith") then
-                for i = 1, #br.friend do
-                    if br.friend[i].hp <= getValue("Bestow Faith") and not UnitBuffID(br.friend[i].unit,223306) then
-                        if cast.bestowFaith(br.friend[i].unit) then return end
+                if getOptionValue("Bestow Faith Target") == 1 then
+                    for i = 1, #br.friend do
+                        if br.friend[i].hp <= getValue ("Bestow Faith") then
+                            if cast.bestowFaith(br.friend[i].unit) then return end
+                        end
+                    end
+                elseif getOptionValue("Bestow Faith Target") == 2 then
+                    for i = 1, #br.friend do
+                        if br.friend[i].hp <= getValue ("Bestow Faith") and UnitGroupRolesAssigned(br.friend[i].unit) == "TANK" then
+                            if cast.bestowFaith(br.friend[i].unit) then return end
+                        end
                     end
                 end
             end
@@ -632,7 +640,7 @@ local function runRotation()
                 end
             end
             -- Holy Light
-            if isChecked("Holy Light") and (getOptionValue("Holy Light Infuse") == 1 or (getOptionValue("Holy Light Infuse") == 2 and buff.infusionOfLight.exists("player"))) then
+            if isChecked("Holy Light") and (getOptionValue("Holy Light Infuse") == 1 or (getOptionValue("Holy Light Infuse") == 2 and buff.infusionOfLight.exists("player"))) then                 
                 for i = 1, #br.friend do
                     if br.friend[i].hp <= getValue("Holy Light") then
                         if cast.holyLight(br.friend[i].unit) then return end

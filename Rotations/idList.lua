@@ -161,22 +161,72 @@ br.idList = {
         -- Unholy
         [252] = {
             abilities                       = {
+                armyoftheDead               = 42650,
+                asphyxiate                  = 108194,
+                chainsOfIce                 = 45524,                
+                corpseShield                = 207319,
+                darkTransformation          = 63560,
+                deathAndDecay               = 43265,
+                deathCoil                   = 47541,
+                festeringStrike             = 85948,
+                huddle                      = 47484,
+                leap                        = 47482,
+                necroticStrike              = 223829,
+                outbreak                    = 77575,
+                raiseDead                   = 46584,
+                scourgeStrike               = 55090,
+                summonGargoyle              = 49206,
 
             },
             artifacts                       = {
+                apocalypse                  = 220143,
 
             },
             buffs                           = {
-
+                corpseShield                = 207319,
+                darkTransformation          = 63560,
+                suddenDoom                  = 49530,
+                darkSuccor                  = 101568,
+                soulReaper                  = 215711,
+                necrosis                    = 207346,
             },
             debuffs                         = {
+                chainsOfIce                 = 45524,
+                virulentPlague              = 191587,
+                festeringWound              = 194310,
+                soulReaper                  = 130736,
+                outbreak                    = 77575,
+                scourgeOfWorlds             = 191748,
+                necroticStrike              = 223829,
 
             },
             glyphs                          = {
 
             },
             talents                         = {
-
+                allWillServe                = 194916,
+                burstingScores              = 207264,
+                ebonFever                   = 207269,
+                epidemic                    = 207317,
+                pestilentPustules           = 194917,
+                blightedRuneWeapon          = 194918,
+                unholyFrenzy                = 207289,
+                castigator                  = 207305,
+                clawingShadows              = 207311,
+                sludgeBelcher               = 207313,
+                asphyxiate                  = 108194,
+                debilitatingInfestation     = 207316,
+                spellEater                  = 207321,
+                corpseShield                = 207319,
+                lingeringApparition         = 212763,
+                shadowInfusion              = 198943,
+                necrosis                    = 207346,
+                infectedClaws               = 207272,
+                darkArbiter                 = 207349,
+                defile                      = 152280,
+                soulReaper                  = 130736,
+            --Honortalents
+                necroticStrike              = 223829,
             },
         },
         -- All
@@ -871,42 +921,54 @@ br.idList = {
                 piercingShot                = 198670,
                 sidewinders                 = 214579,
                 trueshot                    = 193526,
+                volley                      = 194386,                
                 windburst                   = 204147,
-                volley                      = 194386,
+                wyvernSting                 = 19386,
             },
             artifacts                       = {
-
+                windburst                   = 204147,
             },
             buffs                           = {
+                bombardment                 = 82921,
+                bullseye                    = 204090,
                 lockAndLoad                 = 194594,
                 markingTargets              = 223138,
+                sentinelsSight              = 208912,
+                trickShot                   = 227272,
                 trueshot                    = 193526,
                 volley                      = 194386
             },
             debuffs                         = {
+                aMurderOfCrows              = 131894,
+                carefulAim                  = 63468,
                 huntersMark                 = 185365,
+                trueAim                     = 199803,
                 vulnerable                  = 187131,
             },
             glyphs                          = {
 
             },
             talents                         = {
-                loneWolf                    = 155228,
-                steadyFocus                 = 193533,
-                carfulAim                   = 53238,
-                lockAndLoad                 = 194595,
-                blackArrow                  = 194599,
-                trueAim                     = 199527,
-                explosiveShot               = 212431,
-                sentinel                    = 206817,
-                patientSniper               = 213423,
                 aMurderOfCrows              = 131894,
                 barrage                     = 120360,
-                volley                      = 194386,
-                sidewinders                 = 214579,
+                bindingShot                 = 109248,
+                blackArrow                  = 194599,
+                camouflague                 = 199483,
+                carfulAim                   = 53238,
+                disengage                   = 781,
+                explosiveShot               = 212431,
+                farstrider                  = 199523,
+                lockAndLoad                 = 194595,
+                loneWolf                    = 155228,
+                patientSniper               = 234588,
                 piercingShot                = 198670,
-                trickShot                   = 199544,
-                intimidation                = 19577,
+                sentinel                    = 206817,
+                sidewinders                 = 214579,
+                steadyFocus                 = 193533,
+                trickShot                   = 199522,
+                trueAim                     = 199527,
+                volley                      = 194386,
+                wyvernSting                 = 19386,
             },
         },
         -- Survival
@@ -1100,6 +1162,7 @@ br.idList = {
         [64] = {
             abilities                       = {
                 blizzard                    = 190356,
+                coldSnap                    = 235219,
                 coneOfCold                  = 120,
                 fireBlast                   = 108853,
                 flurry                      = 44614,
@@ -1179,7 +1242,6 @@ br.idList = {
             },
             talents                         = {
                 cauterize                   = 86949,
-                coldSnap                    = 11958,
                 incantersFlow               = 1463,
                 iceFloes                    = 108839,
                 iceWard                     = 205036,
