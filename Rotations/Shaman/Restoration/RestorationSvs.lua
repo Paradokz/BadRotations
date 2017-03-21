@@ -45,6 +45,15 @@ local function createToggles()
     CreateButton("DPS",6,0)
 end
 
+--------------
+--- COLORS ---
+--------------
+    local colorBlue     = "|cff00CCFF"
+    local colorGreen    = "|cff00FF00"
+    local colorRed      = "|cffFF0000"
+    local colorWhite    = "|cffFFFFFF"
+    local colorGold     = "|cffFFDD11"
+
 ---------------
 --- OPTIONS ---
 ---------------
@@ -116,6 +125,7 @@ local function createOptions()
         -- Healing Rain
             br.ui:createSpinner(section, "Healing Rain",  80,  0,  100,  5,  "Health Percent to Cast At") 
             br.ui:createSpinnerWithout(section, "Healing Rain Targets",  2,  0,  40,  1,  "Minimum Healing Rain Targets")
+            br.ui:createDropdown(section,"Healing Rain Key", br.dropOptions.Toggle, 6, colorGreen.."Enables"..colorWhite.."/"..colorRed.."Disables "..colorWhite.." Healing Rain manual usage.")
         -- Riptide
             br.ui:createSpinner(section, "Riptide",  90,  0,  100,  5,  "|cffFFFFFFHealth Percent to Cast At")
         -- Healing Stream Totem
@@ -184,7 +194,6 @@ local function runRotation()
         local combatTime                                    = getCombatTime()
         local cd                                            = br.player.cd
         local charges                                       = br.player.charges
-        local CloudburstTotemTime                           = 0
         local debuff                                        = br.player.debuff
         local enemies                                       = enemies or {}
         local gcd                                           = br.player.gcd
@@ -213,6 +222,17 @@ local function runRotation()
         local lowestTank                                    = {}    --Tank
         local tHp                                           = 95
 
+        if CloudburstTotemTime == nil or cd.cloudburstTotem == 0 or not talent.cloudburstTotem then CloudburstTotemTime = 0 end
+
+        if inCombat and not IsMounted() then
+            if isChecked("Ancestral Guidance") and talent.ancestralGuidance and (not CloudburstTotemTime or GetTime() >= CloudburstTotemTime + 6) then
+                if getLowAllies(getValue("Ancestral Guidance")) >= getValue("Ancestral Guidance Targets") then
+                    if cast.ancestralGuidance() then return end
+                end
+            end
+        end
+
+        
         units.dyn8 = br.player.units(8)
         units.dyn40 = br.player.units(40)
         enemies.yards5 = br.player.enemies(5)
@@ -361,16 +381,12 @@ local function runRotation()
             -- Ancestral Guidance
                 if isChecked("Ancestral Guidance") and talent.ancestralGuidance and not talent.cloudburstTotem then
                     if getLowAllies(getValue("Ancestral Guidance")) >= getValue("Ancestral Guidance Targets") then
-                        if talent.cloudburstTotem and buff.cloudburstTotem.exists() then
-                            if cast.ancestralGuidance() then return end    
-                        else
-                            if cast.ancestralGuidance() then return end
-                        end
+                        if cast.ancestralGuidance() then return end
                     end
                 end
             -- Ascendance
-                if isChecked("Ascendance") and talent.ascendance and not buff.ascendance.exists() and not talent.cloudburstTotem then
-                    if getLowAllies(getValue("Ascendance")) >= getValue("Ascendance") then    
+                if isChecked("Ascendance") and talent.ascendance and not talent.cloudburstTotem then
+                    if getLowAllies(getValue("Ascendance")) >= getValue("Ascendance Targets") then    
                         if cast.ascendance() then return end    
                     end
                 end
@@ -404,14 +420,14 @@ local function runRotation()
         -- Cloudburst Totem
         function actionList_CBT()
         -- Ancestral Guidance
-            if isChecked("Ancestral Guidance") and talent.ancestralGuidance and (not CloudburstTotemTime or GetTime() - CloudburstTotemTime > 5) then
+            if isChecked("Ancestral Guidance") and talent.ancestralGuidance and (not CloudburstTotemTime or GetTime() >= CloudburstTotemTime + 6) then
                 if getLowAllies(getValue("Ancestral Guidance")) >= getValue("Ancestral Guidance Targets") then
                     if cast.ancestralGuidance() then return end
                 end
             end
         -- Ascendance
-            if isChecked("Ascendance") and talent.ascendance and not buff.ascendance.exists() then
-                if getLowAllies(getValue("Ascendance")) >= getValue("Ascendance") then    
+            if isChecked("Ascendance") and talent.ascendance then
+                if getLowAllies(getValue("Ascendance")) >= getValue("Ascendance Targets") then    
                     if cast.ascendance() then return end    
                 end
             end
@@ -422,8 +438,11 @@ local function runRotation()
                 end
             end
         -- Healing Rain
-            if isChecked("Healing Rain") and not moving and not buff.healingRain.exists() then
-                if getLowAllies(getValue("Healing Rain")) >= getValue("Healing Rain Targets") then
+            if isChecked("Healing Rain") and not moving then
+                if (SpecificToggle("Healing Rain Key") and not GetCurrentKeyBoardFocus()) then
+                    if CastSpellByName(GetSpellInfo(spell.healingRain),"cursor") then return end 
+                end
+                if not buff.healingRain.exists() and getLowAllies(getValue("Healing Rain")) >= getValue("Healing Rain Targets") then    
                     if castGroundAtBestLocation(spell.healingRain, 20, 0, 40, 0, "heal") then return end    
                 end
             end
@@ -536,7 +555,13 @@ local function runRotation()
             if isChecked("Healing Stream Totem") then
                 for i = 1, #br.friend do                           
                     if br.friend[i].hp <= getValue("Healing Stream Totem") then
-                        if cast.healingStreamTotem(br.friend[i].unit) then return end     
+                        if not talent.echoOfTheElements then
+                            if cast.healingStreamTotem(br.friend[i].unit) then return end
+                        elseif talent.echoOfTheElements and (not HSTime or GetTime() - HSTime > 15) then
+                            if cast.healingStreamTotem(br.friend[i].unit) then
+                            HSTime = GetTime()
+                            return true end
+                        end 
                     end
                 end
             end
@@ -554,6 +579,15 @@ local function runRotation()
                     if br.friend[i].hp <= getValue("Healing Surge") and (buff.tidalWaves.exists() or level < 100) then
                         if cast.healingSurge(br.friend[i].unit) then return end     
                     end
+                end
+            end
+        -- Healing Rain
+            if isChecked("Healing Rain") and not moving then
+                if (SpecificToggle("Healing Rain Key") and not GetCurrentKeyBoardFocus()) then
+                    if CastSpellByName(GetSpellInfo(spell.healingRain),"cursor") then return end 
+                end
+                if not buff.healingRain.exists() and getLowAllies(getValue("Healing Rain")) >= getValue("Healing Rain Targets") then    
+                    if castGroundAtBestLocation(spell.healingRain, 20, 0, 40, 0, "heal") then return end    
                 end
             end
         -- Healing Wave
@@ -626,14 +660,8 @@ local function runRotation()
                 if talent.cloudburstTotem and buff.cloudburstTotem.exists() then
                     actionList_CBT()
                 end
-                -- Healing Rain
-                if isChecked("Healing Rain") and not moving and not buff.healingRain.exists() then
-                    if getLowAllies(getValue("Healing Rain")) >= getValue("Healing Rain Targets") then    
-                        if castGroundAtBestLocation(spell.healingRain, 20, 0, 40, 0, "heal") then return end    
-                    end
-                end
-                actionList_SingleTarget()
                 actionList_AOEHealing()
+                actionList_SingleTarget()
                 if br.player.mode.dps == 1 then
                     actionList_DPS()
                 end

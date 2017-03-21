@@ -103,6 +103,8 @@ local function createOptions()
             br.ui:createCheckbox(section,"Draught of Souls")
         -- Gnawed Thumb Ring
             br.ui:createCheckbox(section,"Gnawed Thumb Ring")
+        -- Artifact
+            br.ui:createDropdownWithout(section,"Artifact", {"|cff00FF00Everything","|cffFFFF00Cooldowns","|cffFF0000Never"}, 1, "|cffFFFFFFWhen to use Artifact Ability.")
         -- Experimental BoK Code Checkbox :P
             br.ui:createCheckbox(section,"Experimental BoK Logic", "Should provide a dps gain, however not fully tested. Disable if causing issues.")
         br.ui:checkSectionState(section)
@@ -336,7 +338,7 @@ local function runRotation()
         else
             BetterThanWDP = false
         end
-        if (markOfTheCraneCount >= 13 and #enemies.yards5 >= 3) or (markOfTheCraneCount >= 14 and #enemies.yards5 == 2) or (markOfTheCraneCount >= 16 and #enemies.yards5 == 1) then
+        if (markOfTheCraneCount >= 13 and #enemies.yards5 >= 3) or (markOfTheCraneCount >= 14 and #enemies.yards5 == 2) or markOfTheCraneCount >= 16 then
             BetterThanFoF = true
             --Print("Better than FoF")
         else
@@ -394,6 +396,9 @@ local function runRotation()
         --ChatOverlay(tostring(isCastingSpell(spell.cracklingJadeLightning)))
 
         -- Healing Winds - Transcendence Cancel
+        if isChecked("Healing Winds") and buff.transcendence.exists() and (buff.healingWinds.exists() or php > getOptionValue("Healing Winds")) then
+            CancelUnitBuff("player",GetSpellInfo(spell.buffs.transcendence))
+        end
         -- if isChecked("Healing Winds") then
         --     if tPX == nil or tPY == nil or not buff.transcendence.exists() then tPX, tPY, tPZ = ObjectPosition("player") end
         --     if getDistanceToObject("player",tPX,tPY,tPZ) > 40 or (not inCombat and php > getOptionValue("Healing Winds")) then 
@@ -524,11 +529,11 @@ local function runRotation()
                     end
                 end
         -- Effuse
-                if isChecked("Effuse") and ((not inCombat and php <= getOptionValue("Effuse")) --[[or (inCombat and php <= getOptionValue("Effuse") / 2)]]) then
+                if isChecked("Effuse") and not inCombat and php <= getOptionValue("Effuse") then
                     if cast.effuse() then return end
                 end
         -- Healing Elixir
-                if isChecked("Healing Elixir") and php <= getOptionValue("Healing Elixir") then
+                if isChecked("Healing Elixir") and artifact.healingWinds and php <= getOptionValue("Healing Elixir") then
                     if cast.healingElixir() then return end
                 end
         -- Leg Sweep
@@ -679,7 +684,7 @@ local function runRotation()
                             end
         -- Storm, Earth, and Fire
                         elseif ToD and not SEF then
-                            if (mode.sef == 2 or (mode.sef == 1 and useCDs())) and GetTime() >= SerenityTest + (1 - 0.2 - getOptionValue("SEF Timer")) then
+                            if GetTime() >= SerenityTest + (1 - 0.2 - getOptionValue("SEF Timer")) then
                                 castOpener("stormEarthAndFire","SEF",5)
                             end
         -- Rising Sun Kick
@@ -729,7 +734,7 @@ local function runRotation()
                             end
         -- Storm, Earth, and Fire
                         elseif ToD and not SEF then
-                            if (mode.sef == 2 or (mode.sef == 1 and useCDs())) and GetTime() >= SerenityTest + (1 - 0.2 - getOptionValue("SEF Timer")) then
+                            if GetTime() >= SerenityTest + (1 - 0.2 - getOptionValue("SEF Timer")) then
                                 castOpener("stormEarthAndFire","SEF",5)
                             end
         -- Rising Sun Kick
@@ -790,7 +795,7 @@ local function runRotation()
                             castOpener("tigerPalm","TP2",4)
         -- Storm, Earth, and Fire
                         elseif TP2 and not SEF then
-                            if (mode.sef == 2 or (mode.sef == 1 and useCDs())) and GetTime() >= SerenityTest + (1 - getOptionValue("SEF Timer")) then
+                            if GetTime() >= SerenityTest + (1 - getOptionValue("SEF Timer")) then
                                 castOpener("stormEarthAndFire","SEF",5)
                             else
                                 Print("5: Storm, Earth, and Fire (Uncastable)");
@@ -931,9 +936,11 @@ local function runRotation()
             -- strike_of_the_windlord,if=equipped.convergence_of_fates&talent.serenity.enabled&cooldown.serenity.remains>=10
             -- strike_of_the_windlord,if=equipped.convergence_of_fates&!talent.serenity.enabled
             -- strike_of_the_windlord,if=!equipped.convergence_of_fates
-            if (((talent.serenity and cd.serenity >= 10) or not isChecked("Serenity") or not useCDs()) or (not talent.serenity and #enemies.yards5 < 6)) and getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord then
-                if not hasEquiped(140806) or (hasEquiped(140806) and (not talent.serenity or (talent.serenity and cd.serenity >= 10))) then
-                    if cast.strikeOfTheWindlord() then return end
+            if getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs()) then
+                if (((talent.serenity and cd.serenity >= 10) or not isChecked("Serenity") or not useCDs()) or (not talent.serenity and #enemies.yards5 < 6)) and getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord then
+                    if not hasEquiped(140806) or (hasEquiped(140806) and (not talent.serenity or (talent.serenity and cd.serenity >= 10))) then
+                        if cast.strikeOfTheWindlord() then return end
+                    end
                 end
             end
         -- SCK
@@ -1102,7 +1109,7 @@ local function runRotation()
                 if buff.serenity.exists() then
         -- Strike of the Windlord
                     -- strike_of_the_windlord
-                    if getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord then
+                    if getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord and getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs()) then
                         if cast.strikeOfTheWindlord() then return end
                     end
         -- Rising Sun Kick
@@ -1369,7 +1376,7 @@ local function runRotation()
                         if cast.whirlingDragonPunch() then return end
                     end
         -- Strike of the Windlord
-                    if (((talent.serenity and cd.serenity > 20) or not isChecked("Serenity") or not useCDs()) or not talent.serenity) and getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord then
+                    if (((talent.serenity and cd.serenity > 20) or not isChecked("Serenity") or not useCDs()) or not talent.serenity) and getDistance(units.dyn5) < 5 and lastCombo ~= spell.strikeOfTheWindlord and getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs()) then
                         if cast.strikeOfTheWindlord() then return end
                     end
         -- Tiger Palm
