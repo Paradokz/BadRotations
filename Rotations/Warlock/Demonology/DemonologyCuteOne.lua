@@ -225,15 +225,19 @@ local function runRotation()
             DSB1 = false
             DOOM = false
             SDG = false
+            FSDG = false
             GRF = false
+            FGRF = false
             DE2 = false
             DSB2 = false
             DGL = false
+            FDGL = false
             DE3 = false
             DSB3 = false
             DSB4 = false
             DSB5 = false
             HVST = false
+            FHVST = false
             DRS = false
             HOG = false
             DE5 = false
@@ -263,12 +267,22 @@ local function runRotation()
         local infernal = false
         local infernalDE = false
         local felguard = false
+        local felguardEnemies = 0
         local petDE = UnitBuffID("pet",spell.buffs.demonicEmpowerment,"player") ~= nil --buff.pet.demonicEmpowerment
         local demonwrathPet = false
-        if br.player.petInfo ~= nil then
-            for i = 1, #br.player.petInfo do
-                local thisUnit = br.player.petInfo[i].id
-                local hasDEbuff = br.player.petInfo[i].deBuff
+        local missingDE = 0
+        if petInfo ~= nil then
+            for k, v in pairs(petInfo) do
+            -- for i = 1, #br.player.petInfo do
+                local thisUnit = petInfo[k].id or 0
+                local hasDEbuff = petInfo[k].deBuff or false
+                local enemyCount = petInfo[k].numEnemies or 0
+                if enemyCount >= 3 then
+                    demonwrathPet = true;
+                    break
+                else
+                    demonwrathPet = false
+                end
                 if thisUnit == 55659 then
                     wildImpCount = wildImpCount + 1
                     wildImpDE = hasDEbuff
@@ -283,15 +297,9 @@ local function runRotation()
                 if thisUnit == 103673 then darkglare = true; darkglareDE = hasDEbuff end
                 if thisUnit == 11859 then doomguard = true; doomguardDE = hasDEbuff end
                 if thisUnit == 89 then infernal = true; infernalDE = hasDEbuff end
-                if thisUnit == 17252 then felguard = true end
-            end
-            for i = 1, #br.player.petInfo do
-                local enemyCount = br.player.petInfo[i].numEnemies
-                if enemyCount >= 3 then
-                    demonwrathPet = true;
-                    break
-                else
-                    demonwrathPet = false
+                if thisUnit == 17252 then felguard = true; felguardEnemies = petInfo[k].numEnemies end
+                if not petInfo[k].deBuff then
+                    missingDE = missingDE + 1
                 end
             end
         end
@@ -493,7 +501,7 @@ local function runRotation()
             if isBoss("target") and isValidUnit("target") and opener == false then
                 if (isChecked("Pre-Pull Timer") and pullTimer <= getOptionValue("Pre-Pull Timer")) or not isChecked("Pre-Pull Timer") or pullTimer == 999 then
                 -- Demonic Empowerment
-                    if not DE1 then
+                    if not DE1 and not isMoving("player") then
                         castOpener("demonicEmpowerment","DE1",1)
                 -- Potion
                     -- potion
@@ -501,11 +509,15 @@ local function runRotation()
                         Print("Potion Used!");
                         useItem(142117)
                 -- Demonbolt/Shadowbolt
-                    elseif DE1 and not DSB1 then
-                        if talent.demonbolt then
-                            castOpener("demonbolt","DSB1",2)
+                    elseif DE1 and not DSB1 and not isMoving("player") then
+                        if shards < 5 then
+                            if talent.demonbolt then
+                                castOpener("demonbolt","DSB1",2)
+                            else
+                                castOpener("shadowbolt","DSB1",2)
+                            end
                         else
-                            castOpener("shadowbolt","DSB1",2)
+                            DSB1 = true
                         end
                 -- Pet Attack
                         if not UnitIsUnit("pettarget","target") then
@@ -515,56 +527,102 @@ local function runRotation()
                     elseif DSB1 and not DOOM then
                         castOpener("doom","DOOM",3)
                 -- Summon Doomguard
-                    elseif DOOM and not SDG then
-                        castOpener("summonDoomguard","SDG",4)
+                    elseif DOOM and not (SDG or FSDG) then
+                        if cd.summonDoomguard == 0  then
+                            castOpener("summonDoomguard","SDG",4)
+                        elseif cd.summonDoomguard > br.player.gcd then
+                            print("4. Summon Doom Guard: Not Cast (Cooldown)")
+                            FSDG = true
+                        end
                 -- Grimoire: Felguard
-                    elseif SDG and not GRF then
-                        castOpener("grimoireFelguard","GRF",5)
+                    elseif (SDG or DOOM) and not (GRF or FGRF) then
+                        if cd.grimoireFelguard == 0 then
+                            castOpener("grimoireFelguard","GRF",5)
+                        elseif cd.grimoireFelguard > br.player.gcd then
+                            print("5. Grimore Felguard: Not Cast(Cooldown)")
+                            FGRF = true
+                        end
                 -- Demonic Empowerment
-                    elseif GRF and not DE2 then
+                    elseif (GRF or SDG) and not DE2 and not isMoving("player") then
                         castOpener("demonicEmpowerment","DE2",6)
                 -- Demonbolt/Shadowbolt
-                    elseif DE2 and not DSB2 then
-                        if talent.demonbolt then
-                            castOpener("demonbolt","DSB2",7)
+                    elseif (DE2 or DOOM) and not DSB2 and not isMoving("player") then
+                        if shards < 5 then
+                            if talent.demonbolt then
+                                castOpener("demonbolt","DSB2",7)
+                            else
+                                castOpener("shadowbolt","DSB2",7)
+                            end
                         else
-                            castOpener("shadowbolt","DSB2",7)
+                            DSB2 = true
                         end
                 -- Summon Darkglare
-                    elseif DSB2 and not DGL then
-                        castOpener("summonDarkglare","DGL",8)
+                    elseif DSB2 and not (DGL or FDGL) then
+                        if talent.summonDarkglare then
+                            if cd.summonDarkglare == 0 then
+                                castOpener("summonDarkglare","DGL",8)
+                            elseif cd.summonDarkglare > br.player.gcd then
+                                print("8. Summon Darkglare: Not Cast(Cooldown)")
+                                FDGL = true
+                            end
+                        else
+                            print("8. Summon Darkglare: Not Cast(Not Talented)")
+                            FDGL = true
+                        end
                 -- Demonic Empowerment
-                    elseif DGL and not DE3 then
+                    elseif DGL and not DE3 and not isMoving("player") then
                         castOpener("demonicEmpowerment","DE3",9)
                 -- Demonbolt/Shadowbolt
-                    elseif DE3 and not DSB3 then
-                        if talent.demonbolt then
-                            castOpener("demonbolt","DSB3",10)
+                    elseif (DE3 or DSB2) and not DSB3 and not isMoving("player") then
+                        if shards < 5 then
+                            if talent.demonbolt then
+                                castOpener("demonbolt","DSB3",10)
+                            else
+                                castOpener("shadowbolt","DSB3",10)
+                            end
                         else
-                            castOpener("shadowbolt","DSB3",10)
+                            DSB3 = true
                         end
                 -- Demonbolt/Shadowbolt
-                    elseif DSB3 and not DSB4 then
-                        if talent.demonbolt then
-                            castOpener("demonbolt","DSB4",11)
+                    elseif DSB3 and not DSB4 and not isMoving("player") then
+                        if shards < 5 then
+                            if talent.demonbolt then
+                                castOpener("demonbolt","DSB4",11)
+                            else
+                                castOpener("shadowbolt","DSB4",11)
+                            end
                         else
-                            castOpener("shadowbolt","DSB4",11)
+                            DSB4 = true
                         end
                 -- Demonbolt/Shadowbolt
-                    elseif DSB4 and not DSB5 then
-                        if talent.demonbolt then
-                            castOpener("demonbolt","DSB5",12)
+                    elseif DSB4 and not DSB5 and not isMoving("player") then
+                        if shards < 5 then
+                            if talent.demonbolt then
+                                castOpener("demonbolt","DSB5",12)
+                            else
+                                castOpener("shadowbolt","DSB5",12)
+                            end
                         else
-                            castOpener("shadowbolt","DSB5",12)
+                            DSB5 = true
                         end
                 -- Soul Harvest
-                    elseif DSB5 and not HVST then
-                        castOpener("soulHarvest","HVST",13)
+                    elseif DSB5 and not (HVST or FHVST) then
+                        if talent.soulHarvest then
+                            if cd.soulHarvest == 0 then
+                                castOpener("soulHarvest","HVST",13)
+                            elseif cd.soulHarvest > br.player.gcd then
+                                print("13. Soul Harvest: Not Cast(Cooldown)")
+                                FHVST = true
+                            end
+                        else
+                            print("13. Soul Harvest: Not Cast(Not Talented)")
+                            FHVST = true
+                        end
                 -- Call Dreadstalkers
-                    elseif HVST and not DRS then
+                    elseif (HVST or DSB5) and not DRS and not isMoving("player") then
                         castOpener("callDreadstalkers","DRS",14)
                 -- Hand of Guldan
-                    elseif DRS and not HOG then
+                    elseif DRS and not HOG and not isMoving("player") then
                         castOpener("handOfGuldan","HOG",15)
                 -- Demonic Empowerment
                     elseif HOG and not DE5 then
@@ -573,6 +631,7 @@ local function runRotation()
                     elseif DE5 and not TKC then
                         castOpener("thalkielsConsumption","TKC",17)
                     elseif TKC then
+                        print("Opener Complete")
                         opener = true
                     end
                 end
@@ -730,26 +789,28 @@ local function runRotation()
                     end
         -- Demonic Empowerment
                     -- demonic_empowerment,if=(((talent.power_trip.enabled&(!talent.implosion.enabled|spell_targets.demonwrath<=1))|!talent.implosion.enabled|(talent.implosion.enabled&!talent.soul_conduit.enabled&spell_targets.demonwrath<=3))&(wild_imp_no_de>3|prev_gcd.1.hand_of_guldan))|(prev_gcd.1.hand_of_guldan&wild_imp_no_de=0&wild_imp_remaining_duration<=0)|(prev_gcd.1.implosion&wild_imp_no_de>0)
-                    if (((talent.powerTrip and (not talent.implosion or #enemies.yards8t <= 1)) or not talent.implosion
-                            or (talent.implosion and not talent.soulConduit and #enemies.yards8t <= 3))
-                            and ((wildImp and wildImpNoDEcount > 3) or lastSpell == spell.handOfGuldan))
-                        or (lastSpell == spell.handOfGuldan and wildImpNoDEcount == 0 and wildImpRemain <= 0)
-                        or (lastSpell == spell.implosion and wildImp and wildImpNoDEcount > 0)
-                    then
-                        if cast.demonicEmpowerment() then return end
-                    end
+                    if lastSpell ~= spell.demonicEmpowerment then               
+                        if (((talent.powerTrip and (not talent.implosion or #enemies.yards8t <= 1)) or not talent.implosion
+                                or (talent.implosion and not talent.soulConduit and #enemies.yards8t <= 3))
+                                and ((wildImp and wildImpNoDEcount > 3) or lastSpell == spell.handOfGuldan))
+                            or (lastSpell == spell.handOfGuldan and wildImpNoDEcount == 0 and wildImpRemain <= 0)
+                            or (lastSpell == spell.implosion and wildImp and wildImpNoDEcount > 0)
+                        then
+                            if cast.demonicEmpowerment() then return end
+                        end
                     -- demonic_empowerment,if=dreadstalker_no_de>0|darkglare_no_de>0|doomguard_no_de>0|infernal_no_de>0|service_no_de>0
-                    if (dreadStalkers and dreadStalkersNoDEcount > 0)
-                        or (darkglare and not darkglareDE)
-                        or (doomguard and not doomguardDE)
-                        or (infernal and not infernalDE)
-                        or (activePet and not petDE)
-                    then
-                        if cast.demonicEmpowerment() then return end
+                        if (dreadStalkers and dreadStalkersNoDEcount > 0)
+                            or (darkglare and not darkglareDE)
+                            or (doomguard and not doomguardDE)
+                            or (infernal and not infernalDE)
+                            or (activePet and not petDE)
+                        then
+                            if cast.demonicEmpowerment() then return end
+                        end
                     end
         -- Felstorm
                     -- felguard:felstorm
-                    if isChecked("Felstorm") and felguard and petInfo[1].numEnemies >= getOptionValue("Felstorm") and cd.felstorm == 0 then
+                    if isChecked("Felstorm") and felguard and felguardEnemies >= getOptionValue("Felstorm") and cd.felstorm == 0 then
                         if cast.commandDemon() then return end
                     end
         -- Doom
@@ -777,12 +838,6 @@ local function runRotation()
                     -- thalkiels_consumption,if=(dreadstalker_remaining_duration>execute_time|talent.implosion.enabled&spell_targets.implosion>=3)&wild_imp_count>3&wild_imp_remaining_duration>execute_time
                     if getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs()) then
                         if (dreadStalkersRemain > getCastTime(spell.thalkielsConsumption) or (talent.implosion and #enemies.yards8t >= 3)) and wildImpCount > 3 and wildImpRemain > getCastTime(spell.thalkielsConsumption) then
-                            missingDE = 0
-                            for i = 1, #petInfo do
-                                if not petInfo[i].deBuff then
-                                    missingDE = missingDE + 1
-                                end
-                            end
                             if missingDE == 0 then
                                 if cast.thalkielsConsumption() then return end
                             end

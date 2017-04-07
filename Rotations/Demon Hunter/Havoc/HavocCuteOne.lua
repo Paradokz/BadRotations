@@ -251,6 +251,7 @@ local function runRotation()
         if talent.demonic and buff.metamorphosis.duration() > 10 and lastSpell == spell.eyeBeam then metaEyeBeam = true end
         if metaEyeBeam == nil or (metaEyeBeam == true and not buff.metamorphosis.exists()) then metaEyeBeam = false end
 
+
     -- Custom Functions
         local function cancelRushAnimation()
             if castable.felRush and GetUnitSpeed("player") == 0 then
@@ -264,12 +265,15 @@ local function runRotation()
         end
         local function cancelRetreatAnimation()
             if castable.vengefulRetreat then
-                C_Timer.After(.001, function() SetHackEnabled("NoKnockback", true) end)
-                C_Timer.After(.35, function() cast.vengefulRetreat() end)
-                C_Timer.After(.55, function() SetHackEnabled("NoKnockback", false) end)
+                -- C_Timer.After(.001, function() SetHackEnabled("NoKnockback", true) end)
+                -- C_Timer.After(.35, function() cast.vengefulRetreat() end)
+                -- C_Timer.After(.55, function() SetHackEnabled("NoKnockback", false) end)
+                SetHackEnabled("NoKnockback", true)
+                cast.vengefulRetreat()
             end
             return
         end
+        if IsHackEnabled("NoKnockback") then SetHackEnabled("NoKnockback", false) end
 
 --------------------
 --- Action Lists ---
@@ -620,7 +624,7 @@ local function runRotation()
                             or (not t19_4pc and not poolForMeta and not buff.metamorphosis.exists() 
                             and (artifact.anguishOfTheDeceiver or ((mode.rotation == 1 and enemies.yards8r >= getOptionValue("Eye Beam Targets") and getOptionValue("Eye Beam Usage") ~= 3) or mode.rotation == 2)) 
                             and not talent.chaosCleave and getOptionValue("Eye Beam Usage") == 1))
-                        -- and getDistance(units.dyn8) < 8 and getFacing("player",units.dyn5,45)
+                        and getDistance(units.dyn8) < 8 and getFacing("player",units.dyn5,45)
                     then
                         if cast.eyeBeam(units.dyn5) then return end
                     end

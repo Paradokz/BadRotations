@@ -231,6 +231,7 @@ local function runRotation()
         enemies.yards5 = br.player.enemies(5)
         enemies.yards8 = br.player.enemies(8)
         enemies.yards10 = br.player.enemies(10)
+        enemies.yards20 = br.player.enemies(20)
         enemies.yards30 = br.player.enemies(30)
         dotHPLimit = getOptionValue("Multi-Dot HP Limit")
         maxrupture = getOptionValue("Max rupture count")
@@ -245,6 +246,7 @@ local function runRotation()
  
         if opener == nil then opener = false end
         if not inCombat and not ObjectExists("target") and lastSpell ~= spell.vanish then
+            OPN1 = false
             GAR1 = false
             MUT1 = false
             RUP1 = false
@@ -314,11 +316,11 @@ local function runRotation()
 --------------------
     -- Action List - Extras
         local function actionList_Extras()
-            -- TODO: Add Extra Features To Base Profile
+        -- TODO: Add Extra Features To Base Profile
         -- Dummy Test
             if isChecked("DPS Testing") then
                 if GetObjectExists("target") then
-                    if getCombatTime() >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
+                    if cTime >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
                         StopAttack()
                         ClearTarget()
                         ChatOverlay(tonumber(getOptionValue("DPS Testing")) .." Minute Dummy Test Concluded - Profile Stopped")
@@ -455,19 +457,17 @@ local function runRotation()
         -- Vendetta
                 -- vendetta,if=talent.exsanguinate.enabled&cooldown.exsanguinate.remain()s<5&dot.rupture.ticking
                 -- vendetta,if=talent.exsanguinate.enabled&(artifact.master_assassin.rank>=4-equipped.convergence_of_fates|equipped.duskwalkers_footpads)&energy.deficit>=75&!(artifact.master_assassin.rank=5-equipped.convergence_of_fates&equipped.duskwalkers_footpads)
-                -- vendetta,if=!talent.exsanguinate.enabled&energy.deficit>=88-!talent.venom_rush.enabled*10
- 
+                -- vendetta,if=!talent.exsanguinate.enabled&energy.deficit>=88-!talent.venom_rush.enabled*10 
                 if (talent.exsanguinate and ((cd.exsanguinate < 5 and debuff.rupture.exists(units.dyn5))
                     or ((artifact.rank.masterAssassin >= 4 - convergingFate or hasEquiped(137030)) and powerDeficit >= 75 and not (artifact.rank.masterAssassin == 5 - convergingFate and hasEquiped(137030)))))
-                    or (not talent.exsanguinate and powerDeficit >= 85 + 40 * vigor)
+                    or (not talent.exsanguinate and (powerDeficit >= 85 + 40 * vigor or (artifact.urgeToKill and powerDeficit >= 50 + 40 * vigor)))
                 then
                     if cast.vendetta() then return end
                 end
         -- Vanish
                 -- vanish,if=talent.nightstalker.enabled&combo_points>=cp_max_spend&((talent.exsanguinate.enabled&cooldown.exsanguinate.remain()s<1&(dot.rupture.ticking|time>10))|(!talent.exsanguinate.enabled&dot.rupture.refresh()able))
                 -- vanish,if=talent.subterfuge.enabled&dot.garrote.refresh()able&((spell_targets.fan_of_knives<=3&combo_points.deficit>=1+spell_targets.fan_of_knives)|(spell_targets.fan_of_knives>=4&combo_points.deficit>=4))
-                -- vanish,if=talent.shadow_focus.enabled&energy.time_to_max>=2&combo_points.deficit>=4
- 
+                -- vanish,if=talent.shadow_focus.enabled&energy.time_to_max>=2&combo_points.deficit>=4 
                 if isChecked("Vanish") and not solo then
                     if (talent.nightstalker and combo >= select(5,getSpellCost(spell.rupture)) and ((talent.exsanguinate and cd.exsanguinate < 1 and (debuff.rupture.exists(units.dyn5)
                         or cTime > 10)) or (not talent.exsanguinate and debuff.rupture.refresh(units.dyn5)))) or (talent.subterfuge and debuff.garrote.refresh(units.dyn5)
@@ -497,7 +497,7 @@ local function runRotation()
             --  if cast.envenom() then return end
             -- end
             --print("trying to envenom")
-            if (combo >= 4 and (buff.masterAssassinsInitiative.exists() or ttm <= 1)) or debuff.rupture.count() >= 4 or (mode.dos == 1 and (ttm <= 1 or cd.vanish == 0)) or (combo >= 4 and debuff.surgeOfToxins.remain(units.dyn5) <= 0.2 and (debuff.surgeOfToxins.exists(units.dyn5) or mode.pool == 2 or (useCDs() and (cd.kingsbane <= 1 or cd.vendetta <= 3))
+            if (combo >= 4 and (buff.masterAssassinsInitiative.exists() or ttm <= 1)) or (debuff.rupture.count() >= 4 and multidot) or (mode.dos == 1 and (ttm <= 1 or cd.vanish == 0)) or (combo >= 4 and debuff.surgeOfToxins.remain(units.dyn5) <= 0.2 and (debuff.surgeOfToxins.exists(units.dyn5) or mode.pool == 2 or (useCDs() and (cd.kingsbane <= 1 or cd.vendetta <= 3))
                 or debuff.garrote.remain(units.dyn5) <= 2 or not debuff.garrote.exists(units.dyn5) or debuff.kingsbane.exists(units.dyn5)
                 or debuff.vendetta.exists(units.dyn5))) or (talent.elaboratePlanning and combo >= 3 + noExsanguinate and buff.elaboratePlanning.remain() < 0.1)
             then
@@ -512,19 +512,15 @@ local function runRotation()
                 local thisUnit = enemies.yards5[i]
                 if (multidot or (UnitIsUnit(thisUnit,units.dyn5) and not multidot)) then
                     if buff.subterfuge.exists() and debuff.garrote.refresh(thisUnit) and combo < 5 and (not exsanguinated or debuff.garrote.remain(thisUnit) <= 1.5) and (ttd(thisUnit) - debuff.garrote.remain(thisUnit) > 4 or isDummy(thisUnit)) then
-                                      --  print("cycle garrote")
- 
+                        --  print("cycle garrote")
                         if cast.garrote(thisUnit) then return end
                     end
                 end
-            end
- 
+            end 
             if (debuff.garrote.refresh("target") and cd.garrote == 0 and combo <= 4 and not buff.masterAssassinsInitiative.exists()) or (buff.masterAssassinsInitiative.exists() and debuff.garrote.remain() <= 3) then
                -- print("init garrote")
                 if cast.garrote("target") then return end
-            end
- 
-           
+            end            
         -- Rupture
             -- rupture,if=talent.nightstalker.enabled&stealthed.rogue
             if talent.nightstalker and stealthing and isBoss("target") then
@@ -590,20 +586,16 @@ local function runRotation()
                 -- mutilate
                 if cast.mutilate() then return end
             end
-        end -- End Action List - Generators
- 
-        local function actionList_DOS()
- 
-                if debuff.surgeOfToxins.remain() >= 3 and cd.global == 0 and (canUse(13) or canUse(14)) and debuff.kingsbane.remain() < 9 and debuff.agonizingPoison.stack() == 5 then
-                    if cast.vanish() then
-                        useItem(13)
-                        useItem(14)
-                        toggle("Dos",2)
-                    end
+        end -- End Action List - Generators 
+        local function actionList_DOS() 
+            if debuff.surgeOfToxins.remain() >= 3 and cd.global == 0 and (canUse(13) or canUse(14)) and debuff.kingsbane.remain() < 9 and debuff.agonizingPoison.stack() == 5 then
+                if cast.vanish() then
+                    useItem(13)
+                    useItem(14)
+                    toggle("Dos",2)
                 end
- 
-        end
- 
+            end 
+        end 
     -- Action List - PreCombat
         local function actionList_PreCombat()
         -- Apply Poison
@@ -633,9 +625,18 @@ local function runRotation()
             end
         -- Stealth
             -- stealth
-            if isChecked("Stealth") and not inCombat and (not IsResting() or (isDummy("target") and lastSpell ~= spell.vanish)) then
+            if isChecked("Stealth") and not stealth and not inCombat and (not IsResting() or isDummy("target")) then
                 if getOptionValue("Stealth") == 1 then
                     if cast.stealth() then return end
+                end 
+                if #enemies.yards20 > 0 and getOptionValue("Stealth") == 3 then
+                    for i = 1, #enemies.yards20 do
+                        local thisUnit = enemies.yards20[i]
+                        if UnitIsEnemy(thisUnit,"player") or isDummy("target") then
+
+                            if cast.stealth("player") then return end
+                        end
+                    end
                 end
             end
         -- Marked For Death
@@ -652,10 +653,12 @@ local function runRotation()
             end
         -- Start Attack
             -- auto_attack
-            if isValidUnit("target") and getDistance("target") < 5 and mode.pickPocket ~= 2 then
-                if isChecked("Opener") and isBoss("target") and opener == false then
-                    if not GAR1 and power >= 45 then
+            if isChecked("Opener") and isBoss("target") and getDistance("target") < 5 and opener == false then
+                if isValidUnit("target") and mode.pickPocket ~= 2 then
+                    if not OPN1 then 
                         Print("Starting Opener")
+                        OPN1 = true
+                    elseif not GAR1 and power >= 45 then
             -- Garrote
                         if castOpener("garrote","GAR1",1) then return end
                     elseif GAR1 and not MUT1 and power >= 55 then
@@ -693,18 +696,18 @@ local function runRotation()
                         Print("Opener Complete")
                         return
                     end
-                elseif not isBoss("target") or not isChecked("Opener") then
-                    if combo >= 2 and not debuff.rupture.exists(units.dyn5) and cTime < 10 and not artifact.urgeToKill and getOptionValue("Stealth Breaker") == 1 then
-                        if cast.rupture("target") then opener = true; return end
-                    elseif combo >= 4 and not debuff.rupture.exists(units.dyn5) and getOptionValue("Stealth Breaker") == 1 then
-                        if cast.rupture("target") then opener = true; return end
-                    elseif level >= 48 and not debuff.garrote.exists(units.dyn5) and cd.garrote <= 1 and getOptionValue("Stealth Breaker") == 1 then
-                        if cast.garrote("target") then opener = true; return end
-                    elseif level >= 29 and getOptionValue("Stealth Breaker") == 2 then
-                        if cast.cheapShot("target") then opener = true; return end
-                    else
-                        if cast.mutilate("target") then opener = true; return end
-                    end
+                end
+            elseif (UnitExists("target") and not isBoss("target")) or not isChecked("Opener") then
+                if combo >= 2 and not debuff.rupture.exists(units.dyn5) and cTime < 10 and not artifact.urgeToKill and getOptionValue("Stealth Breaker") == 1 then
+                    if cast.rupture("target") then opener = true; return end
+                elseif combo >= 4 and not debuff.rupture.exists(units.dyn5) and getOptionValue("Stealth Breaker") == 1 then
+                    if cast.rupture("target") then opener = true; return end
+                elseif level >= 48 and not debuff.garrote.exists(units.dyn5) and cd.garrote <= 1 and getOptionValue("Stealth Breaker") == 1 then
+                    if cast.garrote("target") then opener = true; return end
+                elseif level >= 29 and getOptionValue("Stealth Breaker") == 2 then
+                    if cast.cheapShot("target") then opener = true; return end
+                else
+                    if cast.mutilate("target") then opener = true; return end
                 end
             end
         end -- End Action List - Opener
@@ -728,7 +731,7 @@ local function runRotation()
 --------------------------
 --- Interrupt Rotation ---
 --------------------------
-                if actionList_Interrupts() then return end
+            if actionList_Interrupts() then return end
 ------------------------------
 --- Out of Combat Rotation ---
 ------------------------------
@@ -754,7 +757,7 @@ local function runRotation()
                 if isChecked("Shadowstep") and getDistance("target") > 8 and getDistance("target") < 25 then
                     if cast.shadowstep("target") then return end
                 end
-                if opener == false and isChecked("Opener") and isBoss("target") then
+                if opener == false then
                     if actionList_Opener() then return end
                 end
                 if (not stealthing or (ObjectExists(units.dyn5) and br.player.buff.vanish.exists())) then
