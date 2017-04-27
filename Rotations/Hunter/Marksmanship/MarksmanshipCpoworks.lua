@@ -163,7 +163,7 @@ local function runRotation()
         local cd                                            = br.player.cd
         local charges                                       = br.player.charges
         local deadMouse                                     = UnitIsDeadOrGhost("mouseover")
-        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or ObjectExists("target"), UnitIsPlayer("target")
+        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or GetObjectExists("target"), UnitIsPlayer("target")
         local debuff, debuffcount                           = br.player.debuff, br.player.debuffcount
         local enemies                                       = enemies or {}
         local explosiveTarget                               = explosiveTarget
@@ -172,7 +172,7 @@ local function runRotation()
         local flaskBuff                                     = getBuffRemain("player",br.player.flask.wod.buff.agilityBig)
         local friendly                                      = friendly or UnitIsFriend("target", "player")
         local gcd                                           = br.player.gcd
-        local hasMouse                                      = ObjectExists("mouseover")
+        local hasMouse                                      = GetObjectExists("mouseover")
         local healPot                                       = getHealthPot()
         local inCombat                                      = br.player.inCombat
         local inInstance                                    = br.player.instance=="party"
@@ -286,19 +286,39 @@ local function runRotation()
         end
 
         local function getExplosiveDistance(otherUnit)
-            -- local objectCount = GetObjectCount() or 0
-            if otherUnit == nil then otherUnit = "target" end
+            -- Find Explosive Shot Object
+            local explosiveObject = nil
+            if ObjectExists("target") and otherUnit == nil then otherUnit = "target" end
+            if not ObjectExists(otherUnit) then otherUnit = nil end
             for i = 1, ObjectCount() do
                 local thisUnit = GetObjectWithIndex(i)
-                if ObjectExists(otherUnit) and GetObjectID(thisUnit) == 11492 then --and UnitIsUnit("player",UnitCreator(thisUnit)) then
-                    return GetDistanceBetweenObjects(thisUnit,otherUnit)
+                if GetObjectID(thisUnit) == 11492 then
+                    explosiveObject = thisUnit
+                    -- Print("Used Explosive!")
+                    local x1, y1 = ObjectPosition(thisUnit)
+                    -- Print("Explosive at X: "..x1..", Y: "..y1)
+                    -- print(tostring(ObjectName(thisUnit)))
+                    break
                 end
             end
-            return 40
+            -- Return Distances
+            if ObjectExists(explosiveObject) and ObjectExists(otherUnit) then
+                return GetDistanceBetweenObjects(explosiveObject,otherUnit)
+            -- elseif ObjectExists("target") then
+            --     return GetDistanceBetweenObjects("target","player")
+            else 
+                return 99
+            end
         end
-        if explosiveTarget == nil or not ObjectExists(explosiveTarget) then explosiveTarget = "target" end
-        if ObjectExists(explosiveTarget) and getExplosiveDistance(explosiveTarget) < 5 then
-            if castSpell(explosiveTarget,spell.explosiveShotDetonate,false,false,false,true,false,true,true,false) then return end
+
+        -- Explosions Gotta Have More Explosions!
+        if getExplosiveDistance(explosiveTarget) < 5 then
+            -- Print("Explode NOW!")
+            -- if castSpell(explosiveTarget,spell.explosiveShotDetonate,true,false,false,true,false,true,true,false) then Print("EXPLOSIONS!") return end
+            CastSpellByName(GetSpellInfo(spell.explosiveShotDetonate))
+        end
+        if getExplosiveDistance(explosiveTarget) < 99 then
+            -- Print("Explosive Distance: "..getExplosiveDistance(explosiveTarget))
         end
 
 --------------------
@@ -306,8 +326,8 @@ local function runRotation()
 --------------------
     -- Action List - Pet Management
         local function actionList_PetManagement()
-            if not IsMounted() then
-                if isChecked("Auto Summon") and not UnitExists("pet") and (UnitIsDeadOrGhost("pet") ~= nil or IsPetActive() == false) then
+            if not IsMounted() and not talent.loneWolf then
+                if isChecked("Auto Summon") and not GetUnitExists("pet") and (UnitIsDeadOrGhost("pet") ~= nil or IsPetActive() == false) then
                   if waitForPetToAppear ~= nil and waitForPetToAppear < GetTime() - 2 then
                       if deadPet == true then
                         if castSpell("player",982) then return; end
@@ -360,7 +380,7 @@ local function runRotation()
         local function actionList_Extras()
         -- Dummy Test
             if isChecked("DPS Testing") then
-                if ObjectExists("target") then
+                if GetObjectExists("target") then
                     if getCombatTime() >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
                         StopAttack()
                         ClearTarget()

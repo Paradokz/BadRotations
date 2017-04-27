@@ -138,7 +138,7 @@ function castGroundAtBestLocation(spellID, radius, minUnits, maxRange, minRange,
             if isNotBlacklisted(thisUnit) then
                 if thisDistance < maxRange and thisDistance >= minRange and hasThreat then
                     if not UnitIsDeadOrGhost(thisUnit) and (getFacing("player",thisUnit) or UnitIsUnit(thisUnit,"player")) and getLineOfSight(thisUnit) and not isMoving(thisUnit) then
-                        if UnitAffectingCombat(thisUnit) or (spellType == "heal" and getHP(thisUnit) < 90) or isDummy(thisUnit) then
+                        if UnitAffectingCombat(thisUnit) or spellType == "heal" or isDummy(thisUnit) then
                             table.insert(allUnitsInRange,thisUnit)
                         end
                     end
@@ -705,6 +705,50 @@ function br.DBM:getPulltimer(time, specificID)
     end
     return 999 -- return number to avoid conflicts but to high so it should never trigger
 end
+
+function br.DBM:getPulltimer_fix(time, specificID)
+    if br.DBM.Timer then
+        specificID = specificID or "Pull in"
+        local hasPulltimer = false
+        local isBelowTime = false
+        local pullTimer = 0
+        for i = 1, #br.DBM.Timer do
+            -- Check if a Pulltimer is present
+			--Print("get pull timer id="..br.DBM.Timer[i].id)
+			--Print("time="..br.DBM.Timer[i].timer)
+			
+            --if br.DBM.Timer[i].id == specificID then
+			is_find , _ = string.find(br.DBM.Timer[i].id , tostring(specificID))
+			if is_find ~= nil then
+                hasPulltimer = true
+                pullTimer = br.DBM.Timer[i].timer
+				
+                -- if a time is given set var to true
+                if time then
+                    if pullTimer <= time then
+                        isBelowTime = true
+                    end
+                end
+            end
+        end
+
+        -- if a time is given return true if pulltimer and below given time
+        -- else return time
+        if time ~= nil then
+            if hasPulltimer and isBelowTime then
+                return true
+            else
+                return false
+            end
+        else
+            if hasPulltimer then
+                return pullTimer
+            end
+        end
+    end
+    return 999 -- return number to avoid conflicts but to high so it should never trigger
+end
+
 
 --- Usage:
 -- 1 - br.DBM:getTimer(spellID) -> return (number) the count of given spell ID timer

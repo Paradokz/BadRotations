@@ -174,7 +174,7 @@ local function runRotation()
         local debuff        = br.player.debuff
         local enemies       = enemies or {}
         local gcd           = br.player.gcd
-        local hastar        = ObjectExists("target")
+        local hastar        = GetObjectExists("target")
         local healPot       = getHealthPot()
         local holyPower     = br.player.power.amount.holyPower
         local holyPowerMax  = br.player.power.holyPower.max
@@ -198,7 +198,7 @@ local function runRotation()
 
         if profileStop == nil then profileStop = false end
         if opener == nil then opener = false end
-        if not inCombat and not ObjectExists("target") then
+        if not inCombat and not GetObjectExists("target") then
             opener = false
             JUD1 = false
             BOJ1 = false
@@ -485,7 +485,9 @@ local function runRotation()
     --Profile Stop | Pause
         if not inCombat and not hastar and profileStop == true then
             profileStop = false
-        elseif (inCombat and profileStop == true) or ((IsMounted() or IsFlying()) and not UnitBuffID("player",220507) and not buff.divineSteed.exists()) or pause() or mode.rotation == 4 then
+        elseif (inCombat and profileStop == true) or ((IsMounted() or IsFlying()) and not UnitBuffID("player",220504) and not UnitBuffID("player",220507) and not buff.divineSteed.exists()) 
+            or pause() or mode.rotation == 4 
+        then
             return true
         else
 -----------------------

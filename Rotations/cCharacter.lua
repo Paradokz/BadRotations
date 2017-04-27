@@ -1,7 +1,7 @@
 --- Character Class
 -- All classes inherit from the base class /cCharacter.lua
-br.ui.window.settings = {}
 cCharacter = {}
+
 
 -- Creates new character with given class
 function cCharacter:new(class)
@@ -137,8 +137,6 @@ function cCharacter:new(class)
 
 		-- Empowered Augment Rune
 		self.useEmpoweredRune()
-
-		self.createSettingsWindow()
 
         -- Get selected rotation
         self.getRotation()
@@ -391,7 +389,7 @@ function cCharacter:new(class)
         br.ui:createCheckbox(section_base, "Use Crystal")
         br.ui:createDropdown(section_base, "Use emp. Rune", {"|cff00FF00Normal","|cffFF0000Raid Only"}, 1, "Use rune anytime or only in raids")
         br.ui:createCheckbox(section_base, "Use Racial")
-    	br.ui:createCheckbox(section_base, "Save/Load Settings", "NOT IMPLEMENTED YET")
+    	slsettings = br.ui:createCheckbox(section_base, "Save/Load Settings", "NOT IMPLEMENTED YET")
         br.ui:checkSectionState(section_base)
     end
 
@@ -530,11 +528,6 @@ function cCharacter:new(class)
 					end
 				end
 			end
-		end
-	end
-	function self.createSettingsWindow()
-		if self.options.settings and br.ui.window.settings.parent == nil then
-			br.ui.window.settings = br.ui:createWindow("Save/Load Settings", 100, 100, "Configuration")
 		end
 	end
 --[[ TODO:

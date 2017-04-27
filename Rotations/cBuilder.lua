@@ -330,7 +330,7 @@ function br.loader:new(spec,specName)
             end
             if minUnits == nil then minUnits = 1 end
             if effectRng == nil then effectRng = 8 end
-            if --[[isChecked("Use: "..spellName) and ]]not select(2,IsUsableSpell(v)) and getSpellCD(v) == 0 and isKnown(v) and amIinRange then
+            if --[[isChecked("Use: "..spellName) and ]]not select(2,IsUsableSpell(v)) and getSpellCD(v) == 0 and (isKnown(v) or debug == "known") and amIinRange then
                 if debug == "debug" then
                     return castSpell(thisUnit,spellCast,false,false,false,false,false,false,false,true)
                 else
@@ -688,6 +688,30 @@ function br.loader:new(spec,specName)
         else
             return false
         end
+    end
+
+    function ComboMaxSpend()
+        return br.player.talent.deeperStrategem and 6 or 5
+    end
+
+    function ComboSpend()
+        return math.min(br.player.power.amount.comboPoints, ComboMaxSpend())
+    end
+
+    function mantleDuration()
+        if hasEquiped(144236) then
+            if br.player.buff.masterAssassinsInitiative.remain() < 0 then
+                mantleDuration = br.player.cd.global + 6
+            else
+                mantleDuration = br.player.buff.masterAssassinsInitiative.remain()
+            end
+        else
+            return 0
+        end
+    end
+
+    function BleedTarget()
+        return (br.player.debuff.garrote.exists("target") and 1 or 0) + (br.player.debuff.rupture.exists("target") and 1 or 0)
     end
 
 -----------------------------

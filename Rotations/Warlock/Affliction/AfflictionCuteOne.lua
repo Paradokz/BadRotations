@@ -43,6 +43,12 @@ local function createToggles()
       [2] = { mode = "Off", value = 2 , overlay = "Seed of Corruption Toggle Disabled", tip = "Will Not Use Soc", highlight = 0, icon = br.player.spell.seedOfCorruption}
     };
     CreateButton("SeedofCorruption",6,0)
+-- Soul Effy Button
+	EffigyModes = {
+      [1] = { mode = "On", value = 1 , overlay = "Effigy Toggle Enabled", tip = "Will Use Effigy ", highlight = 1, icon = br.player.spell.soulEffigy},
+      [2] = { mode = "Off", value = 2 , overlay = "Effigy Toggle Disabled", tip = "Will Not Use Effigy", highlight = 0, icon = br.player.spell.soulEffigy}
+    };
+    CreateButton("Effigy",7,0)
 
 end
 
@@ -81,6 +87,8 @@ local function createOptions()
             br.ui:createSpinnerWithout(section, "Agony Boss HP Limit", 10, 1, 20, 1, "|cffFFFFFFHP Limit that Agony will be cast/refreshed on in relation to Boss HP.")
         -- Seed of Corruption units
             br.ui:createSpinnerWithout(section, "Seed Units", 4, 3, 10, 1, "|cffFFFFFFNumber of Units Seed of Corruption will be cast on.")
+		-- Wrath of Consumption
+			br.ui:createCheckbox(section, "Wrath of Consumption", "|cffFFFFFF Select to enable/disable Wrath of Consumption Stacking")
         br.ui:checkSectionState(section)
     -- Cooldown Options
         section = br.ui:createSection(br.ui.window.profile, "Cooldowns")
@@ -161,6 +169,7 @@ local function runRotation()
         UpdateToggle("MultiDot",0.25)
         br.player.mode.multidot = br.data.settings[br.selectedSpec].toggles["MultiDot"]
         br.player.mode.soc = br.data.settings[br.selectedSpec].toggles["SeedofCorruption"]
+		br.player.mode.effigy = br.data.settings[br.selectedSpec].toggles["Effigy"]
 
 --------------
 --- Locals ---
@@ -177,7 +186,7 @@ local function runRotation()
         local cd                                            = br.player.cd
         local charges                                       = br.player.charges
         local deadMouse                                     = UnitIsDeadOrGhost("mouseover")
-        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or ObjectExists("target"), UnitIsPlayer("target")
+        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or GetObjectExists("target"), UnitIsPlayer("target")
         local debuff                                        = br.player.debuff
         local enemies                                       = enemies or {}
         local falling, swimming, flying, moving             = getFallTime(), IsSwimming(), IsFlying(), GetUnitSpeed("player")>0
@@ -185,7 +194,7 @@ local function runRotation()
         local friendly                                      = friendly or UnitIsFriend("target", "player")
         local gcd                                           = br.player.gcd
         local grimoirePet                                   = getOptionValue("Grimoire of Service - Pet")
-        local hasMouse                                      = ObjectExists("mouseover")
+        local hasMouse                                      = GetObjectExists("mouseover")
         local hasteAmount                                   = GetHaste()/100
         local hasPet                                        = IsPetActive()
         local healPot                                       = getHealthPot()
@@ -266,7 +275,7 @@ local function runRotation()
         end
 
         -- Opener Variables
-        if not inCombat and not ObjectExists("target") then
+        if not inCombat and not GetObjectExists("target") then
             -- DE1 = false
             -- DSB1 = false
             -- DOOM = false
@@ -300,7 +309,7 @@ local function runRotation()
             effigyCount = 0;
             effigied = false
         end
-        if UnitExists(effigyUnit) and UnitIsUnit("target",effigyUnit) and not UnitIsUnit("target","player") then FocusUnit(effigyUnit); ClearTarget(); TargetUnit(units.dyn40); return end
+        if GetUnitExists(effigyUnit) and UnitIsUnit("target",effigyUnit) and not UnitIsUnit("target","player") then FocusUnit(effigyUnit); ClearTarget(); TargetUnit(units.dyn40); return end
 
         -- Pet Data
         if summonPet == 1 then summonId = 416 end
@@ -360,7 +369,7 @@ local function runRotation()
             end
         end
 
-        -- if UnitExists("target") then ChatOverlay(lowestAgony) end
+        -- if GetUnitExists("target") then ChatOverlay(lowestAgony) end
 
 --------------------
 --- Action Lists ---
@@ -369,7 +378,7 @@ local function runRotation()
 		local function actionList_Extras()
 		-- Dummy Test
 			if isChecked("DPS Testing") then
-				if ObjectExists("target") then
+				if GetObjectExists("target") then
 					if getCombatTime() >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
                         StopAttack()
                         ClearTarget()
@@ -417,7 +426,7 @@ local function runRotation()
                     if cast.drainSoul() then return end
                 end
         -- Health Funnel
-                if isChecked("Health Funnel") and getHP("pet") <= getOptionValue("Health Funnel") and ObjectExists("pet") == true and not UnitIsDeadOrGhost("pet") then
+                if isChecked("Health Funnel") and getHP("pet") <= getOptionValue("Health Funnel") and GetObjectExists("pet") == true and not UnitIsDeadOrGhost("pet") then
                     if cast.healthFunnel("pet") then return end
                 end
         -- Unending gResolve
@@ -518,7 +527,7 @@ local function runRotation()
                     -- TODO
                 -- Grimoire of Sacrifice
                     -- grimoire_of_sacrifice,if=talent.grimoire_of_sacrifice.enabled
-                    if talent.grimoireOfSacrifice and ObjectExists("pet") and not UnitIsDeadOrGhost("pet") then
+                    if talent.grimoireOfSacrifice and GetObjectExists("pet") and not UnitIsDeadOrGhost("pet") then
                         if cast.grimoireOfSacrifice() then return end
                     end
                     if useCDs() and isChecked("Pre-Pull Timer") then --and pullTimer <= getOptionValue("Pre-Pull Timer") then
@@ -530,10 +539,10 @@ local function runRotation()
                         end
                         if pullTimer <= getOptionValue("Pre-Pull Timer") - 0.5 then
                             if talent.soulEffigy and not effigied then
-                                if not ObjectExists("target") then
+                                if not GetObjectExists("target") then
                                     TargetUnit(units.dyn40)
                                 end
-                                if ObjectExists("target") then
+                                if GetObjectExists("target") then
                                     if cast.soulEffigy("target") then return end
                                 end
                             end
@@ -549,7 +558,7 @@ local function runRotation()
                         -- potion,name=prolonged_power
                         -- TODO
                 -- Pet Attack/Follow
-                        if isChecked("Pet Management") and UnitExists("target") and not UnitAffectingCombat("pet") then
+                        if isChecked("Pet Management") and GetUnitExists("target") and not UnitAffectingCombat("pet") then
                             PetAssistMode()
                             PetAttack("target")
                         end
@@ -622,10 +631,10 @@ local function runRotation()
                     -- reap_souls,if=!buff.deadwind_harvester.remains&(buff.soul_harvest.remains>5+equipped.144364*1.5&!talent.malefic_grasp.enabled&buff.active_uas.stack>1|buff.tormented_souls.react>=8|target.time_to_die<=buff.tormented_souls.react*5+equipped.144364*1.5|!talent.malefic_grasp.enabled&(trinket.proc.any.react|trinket.stacking_proc.any.react))
                     --if not buff.deadwindHarvester.exists() and (buff.soulHarvest.exists() or buff.tormentedSouls.stack() >= 8 or ttd(units.dyn40) <= buff.tormentedSouls.stack() * 5) then
                     if (getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs())) and mode.multidot == 1
-                        and (buff.tormentedSouls.stack() >= 8 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 6))
-                        and debuff.unstableAffliction.stack() >= 3
-                        and not buff.deadwindHarvester.exists()
-                    then
+                        and (buff.tormentedSouls.stack() >= 5 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 4))
+                        or debuff.unstableAffliction.stack() >= 3 and buff.tormentedSouls.exists()
+						and not buff.deadwindHarvester.exists() and buff.deadwindHarvester.remain() <= 5
+                     then
                         if cast.reapSouls() then return end
                     end
         -- Agony
@@ -635,7 +644,7 @@ local function runRotation()
                     end
         -- Soul Effigy
                     -- soul_effigy,if=!pet.soul_effigy.active
-                    if not effigied then
+                    if not effigied and br.player.mode.effigy == 1 then
                         if cast.soulEffigy("target") then return end
                     end
                     if effigied then
@@ -647,11 +656,11 @@ local function runRotation()
                                     if cast.agony(thisUnit,"aoe") then return end
                                 end
                                 -- Corruption
-                                if debuff.corruption.remain(thisUnit) < 2 + gcd then
+                                if (talent.writheInAgony and debuff.corruption.remain(thisUnit) < 2 + gcd) then
                                     if cast.corruption(thisUnit,"aoe") then return end
                                 end
                                 -- Siphon Life
-                                if debuff.siphonLife.remain(thisUnit) < 2 + gcd then
+                                if (talent.writheInAgony and debuff.siphonLife.remain(thisUnit) < 2 + gcd) then
                                     if cast.siphonLife(thisUnit,"aoe") then return end
                                 end
                             end
@@ -667,9 +676,9 @@ local function runRotation()
                             if cast.agony(thisUnit,"aoe") then return end
                         end
                     end
-       	-- Service Pet
+		-- Service Pet
                     -- service_pet,if=dot.corruption.remain()s&dot.agony.remain()s
-                    if isChecked("Pet Management") and ObjectExists("target") and (getOptionValue("Grimoire of Service - Use") == 1 or (getOptionValue("Grimoire of Service - Use") == 2 and useCDs())) then
+                    if isChecked("Pet Management") and GetObjectExists("target") and (getOptionValue("Grimoire of Service - Use") == 1 or (getOptionValue("Grimoire of Service - Use") == 2 and useCDs())) then
                         if debuff.corruption.exists() and debuff.agony.exists() and br.timer:useTimer("summonPet", getCastTime(spell.summonVoidwalker)+gcd) then
                             if grimoirePet == 1 and lastSpell ~= spell.grimoireImp then
                                 if cast.grimoireImp("target") then prevService = "Imp"; return end
@@ -839,6 +848,11 @@ local function runRotation()
                             end
                         end
                     end
+				-- Wrath of Consumption Stacking
+					if isChecked("Wrath of Consumption") and not isBoss() and not debuff.corruption.exists() 
+					and (ttd(units.dyn40) < 5 and buff.wrathOfConsumption.remain() < 5) then
+						if cast.corruption(units.dyn40,"aoe") then return end
+					end
         -- Siphon Life
                     if debuff.siphonLife.count() < getOptionValue("Multi-Dot Limit") + effigyCount and getHP(units.dyn40) > dotHPLimit then
                         -- siphon_life,if=!talent.malefic_grasp.enabled&remains<=duration*0.3&target.time_to_die>=remains
@@ -869,7 +883,7 @@ local function runRotation()
                             if cast.unstableAffliction(units.dyn40,"aoe") then return end
                         end
           	            -- MG UA (without Reap)
-                        if talent.maleficGrasp and debuff.unstableAffliction.stack() < 2 or shards > 3
+                        if talent.maleficGrasp and debuff.unstableAffliction.stack() < 3 or shards > 2
                             and debuff.agony.remain(units.dyn40) > getCastTime(spell.unstableAffliction) * 2 + 4.5
                             and (not talent.soulEffigy or debuff.agony.remain("Soul Effigy") > getCastTime(spell.unstableAffliction) * 2 + 4.5)
                             -- and (debuff.corruption.remain(units.dyn40) > getCastTime(spell.unstableAffliction) + 3 or talent.absoluteCorruption)
@@ -900,8 +914,9 @@ local function runRotation()
                             end
     				        -- reap soul UA loadup
                             if (getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs()))
-                                and (buff.tormentedSouls.stack() >= 8 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 6))
-                                and debuff.unstableAffliction.stack() < 1
+                                and (buff.tormentedSouls.stack() >= 5 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 4))
+                                and debuff.unstableAffliction.stack() > 2
+								and not buff.deadwindHarvester.exists() and buff.deadwindHarvester.remain() <= 5
                             then
                                 if cast.unstableAffliction(units.dyn40,"aoe") then return end
                             end
@@ -922,8 +937,7 @@ local function runRotation()
 					end
 		-- Reap Soul
                     if (getOptionValue("Artifact") == 1 or (getOptionValue("Artifact") == 2 and useCDs())) and mode.multidot == 1
-						and (buff.tormentedSouls.stack() >= 8 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 6))
-                        and not buff.deadwindHarvester.exists()
+						and (buff.tormentedSouls.stack() >= 5 or (hasEquiped(144364) and buff.tormentedSouls.stack() >= 4))
                     then
 						if cast.reapSouls() then return end
 					end
@@ -935,15 +949,32 @@ local function runRotation()
         -- Drain Soul
                     -- drain_soul,chain=1,interrupt=1
                     if not isCastingSpell(spell.drainSoul,"player") and mode.multidot == 1 and not moving then
-                        if not ObjectExists("target") then TargetUnit("target") end
+                        if not GetObjectExists("target") then TargetUnit("target") end
                         if cast.drainSoul("target") then return end
                     end
 					-- WiA UA (without reap)
                     if talent.writheInAgony then
-                        if not ObjectExists("target") then TargetUnit("target") end
+                        if not GetObjectExists("target") then TargetUnit("target") end
                         if cast.drainSoul("target") then return end
                     end
-        -- Life Tap
+        -- Cont + SE
+					if effigied then
+                        for i = 1, #enemies.yards40 do
+                            local thisUnit = enemies.yards40[i]
+                            if ObjectID(thisUnit) == 103679 then
+                                -- Corruption
+                                if debuff.corruption.remain(thisUnit) < 2 + gcd then
+                                    if cast.corruption(thisUnit,"aoe") then return end
+                                end
+                                -- Siphon Life
+                                if debuff.siphonLife.remain(thisUnit) < 2 + gcd then
+                                    if cast.siphonLife(thisUnit,"aoe") then return end
+                                end
+                            end
+                        end
+                    end
+		
+		-- Life Tap
                     --life_tap
                     if (manaPercent < 20 or (moving and manaPercent < 70)) and php > getOptionValue("Life Tap HP Limit") then
                         if cast.lifeTap() then return end

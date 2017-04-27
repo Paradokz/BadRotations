@@ -251,6 +251,11 @@ function br.read.combatLog()
                     else
                         castCount = lastCount
                     end
+                    -- Blizz CastSpellByName bug bypass
+                    if GetSpellInfo(spell) == GetSpellInfo(botSpell) and spell ~= botSpell then
+                        -- Print("Spell Error Bypass: Correct ID = "..botSpell..", Incorrect ID = "..spell..", on "..botUnit)
+                        castID = true
+                    end
                 end
                 -- set destination
                 if destination == nil or destName == nil then
@@ -272,7 +277,7 @@ function br.read.combatLog()
                 local textString = color..string.format("%-3d", castCount)
                     ..white.."| "..yellow..string.format("%-3.3f", getCombatTime())
                     ..white.."| "..color..string.format("%-6.6d", debugSpell)
-                    ..white.."| "..color..string.format("%-15.15s", spellName)
+                    ..white.."| "..color..string.format("%-25.25s", spellName)
                     ..white.."| "..red..string.format("%.15s", debugdest)
                     -- ..white.." | "..yellow..Power
                 -- pulse display
@@ -322,9 +327,9 @@ function br.read.combatLog()
                 if destination ~= nil and destination ~= "" then
                     local thisUnit = thisUnit
                     if FireHack then
-                        if ObjectExists(destination) then
+                        if GetObjectExists(destination) then
                             thisUnit = GetObjectWithGUID(destination)
-                        elseif ObjectExists("target") then
+                        elseif GetObjectExists("target") then
                             thisUnit = GetObjectWithGUID(UnitGUID("target"))
                         else
                             thisUnit = GetObjectWithGUID(UnitGUID("player"))

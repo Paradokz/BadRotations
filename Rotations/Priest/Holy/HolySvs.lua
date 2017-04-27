@@ -218,7 +218,7 @@ local function runRotation()
         local function actionList_Extras()
         -- Dummy Test
             if isChecked("DPS Testing") then
-                if ObjectExists("target") then
+                if GetObjectExists("target") then
                     if getCombatTime() >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
                         StopAttack()
                         ClearTarget()
@@ -346,10 +346,10 @@ local function runRotation()
         -- AOE Healing
         function actionList_AOEHealing()
         -- Holy Word: Serenity -> Holy Word: Sanctify -> Prayer of Healing Combo
-            if buff.blessingOfTuure.exists() then
+            if isChecked("Holy Word: Serenity") and buff.blessingOfTuure.exists() then
                 if cast.holyWordSerenity(lowest.unit) then return end
             end
-            if buff.divinity.exists() then
+            if isChecked("Holy Word: Sanctify") and buff.divinity.exists() then
                 if castGroundAtBestLocation(spell.holyWordSanctify, 20, 0, 40, 0, "heal") then return end
             end
             if isChecked("Prayer of Healing") and buff.echoOfLight.exists() then
@@ -408,7 +408,7 @@ local function runRotation()
                     for n = 1,40 do
                         local buff,_,_,count,bufftype,duration = UnitDebuff(br.friend[i].unit, n)
                         if buff then
-                            if bufftype == "Curse" or bufftype == "Magic" then
+                            if bufftype == "Disease" or bufftype == "Magic" then
                                 if cast.purify(br.friend[i].unit) then return end
                             end
                         end
@@ -477,7 +477,7 @@ local function runRotation()
                 end                    
             end
         -- Dispel Magic
-            if isChecked("Dispel Magic") and canDispel("target",spell.dispelMagic) and not isBoss() and ObjectExists("target") then
+            if isChecked("Dispel Magic") and canDispel("target",spell.dispelMagic) and not isBoss() and GetObjectExists("target") then
                 if cast.dispelMagic() then return end
             end
         -- Moving

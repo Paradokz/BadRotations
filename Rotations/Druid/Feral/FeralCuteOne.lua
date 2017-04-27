@@ -194,14 +194,14 @@ local function runRotation()
         local cd                                            = br.player.cd
         local charges                                       = br.player.charges
         local deadMouse                                     = UnitIsDeadOrGhost("mouseover")
-        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or ObjectExists("target"), UnitIsPlayer("target")
+        local deadtar, attacktar, hastar, playertar         = deadtar or UnitIsDeadOrGhost("target"), attacktar or UnitCanAttack("target", "player"), hastar or GetObjectExists("target"), UnitIsPlayer("target")
         local debuff                                        = br.player.debuff
         local enemies                                       = enemies or {}
         local falling, swimming, flying, moving             = getFallTime(), IsSwimming(), IsFlying(), GetUnitSpeed("player")>0
         local flaskBuff                                     = getBuffRemain("player",br.player.flask.wod.buff.agilityBig)
         local friendly                                      = friendly or UnitIsFriend("target", "player")
         local gcd                                           = br.player.gcd
-        local hasMouse                                      = ObjectExists("mouseover")
+        local hasMouse                                      = GetObjectExists("mouseover")
         local healPot                                       = getHealthPot()
         local inCombat                                      = br.player.inCombat
         local inInstance                                    = br.player.instance=="party"
@@ -283,8 +283,9 @@ local function runRotation()
         else
             fbMaxEnergy = false
         end
-        if not inCombat and not ObjectExists("target") then
+        if not inCombat and not GetObjectExists("target") then
 			shredCount = 7
+            OPN1 = false
             RK1 = false
             SR1 = false
             BER1 = false
@@ -295,7 +296,7 @@ local function runRotation()
             RIP1 = false
             opener = false
         end
-        -- ChatOverlay(round2(getDistance("target","player","dist"),2)..", "..round2(getDistance("target","player","dist2"),2)..", "..round2(getDistance("target","player","dist3"),2)..", "..round2(getDistance("target","player","dist4"),2))
+        -- ChatOverlay(round2(getDistance("target","player","dist"),2)..", "..round2(getDistance("target","player","dist2"),2)..", "..round2(getDistance("target","player","dist3"),2)..", "..round2(getDistance("target","player","dist4"),2)..", "..round2(getDistance("target"),2))
 
 --------------------
 --- Action Lists ---
@@ -378,7 +379,7 @@ local function runRotation()
 			end -- End Death Cat Mode
 		-- Dummy Test
 			if isChecked("DPS Testing") then
-				if ObjectExists("target") then
+				if GetObjectExists("target") then
 					if getCombatTime() >= (tonumber(getOptionValue("DPS Testing"))*60) and isDummy() then
 						StopAttack()
 						ClearTarget()
@@ -612,8 +613,10 @@ local function runRotation()
             -- auto_attack
             if isChecked("Opener") and isBoss("target") and opener == false then
                 if isValidUnit("target") and getDistance("target") < 5 then
-					if not RK1 and power >= 35 then
-						Print("Starting Opener")
+					if not OPN1 then 
+                        Print("Starting Opener")
+                        OPN1 = true
+                    elseif (not RK1 or not debuff.rake.exists("target")) and power >= 35 then
             -- Rake
        					if castOpener("rake","RK1",1) then return end
        				elseif RK1 and not SR1 and power >= 40 then
@@ -641,7 +644,7 @@ local function runRotation()
 			  		elseif AF1 and not MF1 then
             -- Moonfire
                         if talent.moonfire then
-			    			if castOpener("moonfire","VAN1",6) then return end
+			    			if castOpener("moonfire","MF1",6) then return end
 						else
 							Print("6: Moonfire (Uncastable)");
 							MF1 = true

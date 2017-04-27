@@ -194,7 +194,7 @@ local function runRotation()
         local flaskBuff, canFlask                           = getBuffRemain("player",br.player.flask.wod.buff.agilityBig), canUse(br.player.flask.wod.agilityBig)
         local gcd                                           = br.player.gcd
         local glyph                                         = br.player.glyph
-        local hastar                                        = ObjectExists("target")
+        local hastar                                        = GetObjectExists("target")
         local healPot                                       = getHealthPot()
         local inCombat                                      = br.player.inCombat
         local lastSpell                                     = lastSpellCast
@@ -237,6 +237,7 @@ local function runRotation()
         if cd.deathFromAbove == 0 then dfaCooldown = 1 else dfaCooldown = 0 end
         if vanishTime == nil then vanishTime = GetTime() end
         if buff.hiddenBlade.exists() then hBss = 1 else hBss = 0 end
+        if IsUsableSpell(GetSpellInfo(202895)) == true then BlunderbussActive = true else BlunderbussActive = false end
 
         ------------------------------------------
         --------------Roll the Bones--------------
@@ -506,7 +507,7 @@ local function runRotation()
                     for i=1, #enemies.yards20 do
                         local thisUnit = enemies.yards20
                         if getDistance(thisUnit) < 20 then
-                            if ObjectExists(thisUnit) and UnitCanAttack(thisUnit,"player") and GetTime()-leftCombat > lootDelay then
+                            if GetObjectExists(thisUnit) and UnitCanAttack(thisUnit,"player") and GetTime()-leftCombat > lootDelay then
                                 if cast.stealth() then return end
                             end
                         end
@@ -557,7 +558,7 @@ local function runRotation()
             end
         -- Pistol Shot
             -- pistol_shot,if=combo_points.deficit>=1+buff.broadsides.up&buff.opportunity.up&(energy.time_to_max>2-talent.quick_draw.enabled|(buff.blunderbuss.up&buff.greenskins_waterlogged_wristcuffs.up))
-            if comboDeficit >= (1 + broadUp) and buff.opportunity.exists() and ((ttm > 2 - qDraw) or (buff.adrenalineRush.exists() and ttm > 1.5) or (castable.blunderbuss and buff.greenskinsWaterloggedWristcuffs.exists())) and not stealthing then
+            if comboDeficit >= (1 + broadUp) and buff.opportunity.exists() and ((ttm > 2 - qDraw) or (buff.adrenalineRush.exists() and ttm > 1.5) or (BlunderbussActive and buff.greenskinsWaterloggedWristcuffs.exists())) and not stealthing then
                 if cast.pistolShot("target") then return end
             end
         -- Saber Slash
